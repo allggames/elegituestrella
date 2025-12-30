@@ -9,14 +9,31 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
-  <!-- defs (filtros y degradados compartidos) -->
+  <!-- defs: agregué el filtro outerBorder para generar un borde exterior (sin pintar dentro) -->
   <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
     <defs>
+      <!-- halo blur -->
       <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
         <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g"/>
         <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
 
+      <!-- crea un "anillo" (dilation - original) y lo pinta de marrón -->
+      <filter id="outerBorder" x="-300%" y="-300%" width="700%" height="700%" filterUnits="userSpaceOnUse">
+        <!-- dilate the shape -->
+        <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="dilated"/>
+        <!-- subtract the original to get the ring -->
+        <feComposite in="dilated" in2="SourceAlpha" operator="out" result="ring"/>
+        <!-- fill the ring with the brown color -->
+        <feFlood flood-color="#7a3e1f" result="flood"/>
+        <feComposite in="flood" in2="ring" operator="in" result="border"/>
+        <!-- output only the border (no SourceGraphic) -->
+        <feMerge>
+          <feMergeNode in="border"/>
+        </feMerge>
+      </filter>
+
+      <!-- three star fills -->
       <linearGradient id="fill1" x1="0" x2="1">
         <stop offset="0%" stop-color="#fff6d4"/><stop offset="50%" stop-color="#ffd75a"/><stop offset="100%" stop-color="#ffb000"/>
       </linearGradient>
@@ -39,7 +56,7 @@
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
             <g class="star-group-1">
               <path class="star-halo" d=""></path>
-              <path class="star-outline" d=""></path>
+              <path class="star-outline-fill" d=""></path> <!-- outline rendered by filter -->
               <path class="star-fill" d=""></path>
               <path class="star-rim" d=""></path>
               <ellipse class="star-gloss" cx="46" cy="34" rx="22" ry="9" transform="rotate(-18 46 34)"></ellipse>
@@ -59,7 +76,7 @@
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
             <g class="star-group-2">
               <path class="star-halo" d=""></path>
-              <path class="star-outline" d=""></path>
+              <path class="star-outline-fill" d=""></path>
               <path class="star-fill" d=""></path>
               <path class="star-rim" d=""></path>
               <ellipse class="star-gloss" cx="48" cy="33" rx="26" ry="12" transform="rotate(-16 48 33)"></ellipse>
@@ -79,7 +96,7 @@
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
             <g class="star-group-3">
               <path class="star-halo" d=""></path>
-              <path class="star-outline" d=""></path>
+              <path class="star-outline-fill" d=""></path>
               <path class="star-fill" d=""></path>
               <path class="star-rim" d=""></path>
               <ellipse class="star-gloss" cx="44" cy="36" rx="18" ry="8" transform="rotate(-22 44 36)"></ellipse>
