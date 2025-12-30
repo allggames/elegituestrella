@@ -1,12 +1,11 @@
 // script.js
-// Fix definitivo: la silueta marrón ahora es UN relleno (outline-fill) escalado por fuera
-// (no stroke centrado que meta "marrón por dentro"), la amarilla (fill) y la outline-fill
-// usan transformaciones coherentes para que coincidan. También oculto el óvalo blanco (gloss).
-// Restaura flip, premio y confetti. Reemplaza tu script.js actual y recarga con Ctrl+F5.
+// Restaurado: flip, reveal prize, confetti, sparkles.
+// Alineación corregida: outline y fill usan la misma transform (coinciden).
+// Gloss (óvalo blanco) oculto por defecto.
 
 (function(){ 'use strict';
 
-/* ---------- Geometry: crea "d" para estrella de 5 puntas ---------- */
+/* ---------- Geometry: crear "d" para estrella de 5 puntas ---------- */
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
   let rot = -Math.PI / 2;
   const step = Math.PI / spikes;
@@ -25,15 +24,15 @@ function makeStarPath(cx, cy, spikes, outerR, innerR) {
   return d;
 }
 
-/* ---------- Setup: asigna paths independientes por estrella ---------- */
+/* ---------- Setup: asignar paths independientes por estrella ---------- */
 function setupStars() {
   const starEls = Array.from(document.querySelectorAll('.star'));
   if (!starEls.length) return;
 
   const configs = [
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineExtra: 1.04, outlineFill: '#7a3e1f' },
-    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineExtra: 1.04, outlineFill: '#7a3e1f' },
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineExtra: 1.04, outlineFill: '#7a3e1f' }
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 7 },
+    { haloScale: 1.23, mainScaleY: 1.30, gradient: 'url(#fill2)', outlineW: 8 },
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 7 }
   ];
 
   const cx = 60, cy = 60;
@@ -44,7 +43,7 @@ function setupStars() {
     const svg = btn.querySelector('.star-svg');
     if (!svg) return;
 
-    // helper: find or create element
+    // create element helper
     function ensure(tag, cls) {
       let el = svg.querySelector(`.${cls}`);
       if (!el) {
@@ -55,43 +54,42 @@ function setupStars() {
       return el;
     }
 
-    // ensure elements and DOM order:
-    // halo (back) -> outline-fill (brown behind) -> fill (yellow) -> rim -> gloss (hidden)
+    // Elements order: halo (back) -> outline -> fill -> rim -> gloss (top)
     const halo = ensure('path','star-halo');
-    const outlineFill = ensure('path','star-outline-fill'); // NEW: filled brown outline scaled up
+    const outline = ensure('path','star-outline');
     const fill = ensure('path','star-fill');
     const rim = ensure('path','star-rim');
-    const gloss = ensure('ellipse','star-gloss'); // we'll hide it
+    const gloss = ensure('ellipse','star-gloss');
 
     const cfg = configs[i] || configs[0];
 
-    // assign path data
+    // assign geometry
     halo.setAttribute('d', d);
-    outlineFill.setAttribute('d', d);
+    outline.setAttribute('d', d);
     fill.setAttribute('d', d);
     rim.setAttribute('d', d);
 
-    // halo: bigger blurred yellow
+    // halo (blur filter must exist in index.html)
     halo.setAttribute('fill', cfg.gradient);
     halo.setAttribute('opacity', '0.92');
     halo.setAttribute('filter', 'url(#haloBlur)');
     halo.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
 
-    // outline-fill: brown shape scaled outwards so brown appears outside the yellow
-    // To maintain the vertical "gordito" look, scaleY uses mainScaleY * outlineExtra
-    const outlineScaleX = cfg.outlineExtra; // slight grow horizontally
-    const outlineScaleY = cfg.mainScaleY * cfg.outlineExtra; // preserve vertical stretch
-    outlineFill.setAttribute('fill', cfg.outlineFill);
-    outlineFill.setAttribute('transform', `translate(${cx} ${cy}) scale(${outlineScaleX} ${outlineScaleY}) translate(${-cx} ${-cy})`);
-    outlineFill.style.pointerEvents = 'none';
+    // outline - SAME scaleY as fill so it matches exactly (drawn before fill so it doesn't cover highlights)
+    outline.setAttribute('fill', 'none');
+    outline.setAttribute('stroke', '#7a3e1f');
+    outline.setAttribute('stroke-width', String(cfg.outlineW));
+    outline.setAttribute('stroke-linejoin', 'round');
+    outline.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
+    outline.style.pointerEvents = 'none';
 
-    // fill (yellow): drawn on top of outline-fill, scaled on Y only
+    // fill - main yellow body
     fill.setAttribute('fill', cfg.gradient);
     fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
     fill.setAttribute('stroke-width', '1.1');
     fill.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
 
-    // rim: inner light stroke (smaller)
+    // rim - subtle inner bright stroke
     rim.setAttribute('fill', 'none');
     rim.setAttribute('stroke', 'rgba(255,255,255,0.16)');
     rim.setAttribute('stroke-width', '5.5');
@@ -99,13 +97,14 @@ function setupStars() {
     rim.setAttribute('transform', `translate(${cx} ${cy}) scale(0.96) translate(${-cx} ${-cy})`);
     rim.style.pointerEvents = 'none';
 
-    // gloss: hide (user didn't want the big oval). If later you want subtle highlight, set opacity ~0.6 and adjust rx/ry.
+    // gloss: user asked to remove the big white oval -> hide it
     gloss.setAttribute('fill', 'rgba(255,255,255,0.96)');
     gloss.setAttribute('opacity', '0'); // hidden
+    // if you want small specular instead, we can set opacity to 0.85 and small rx/ry here.
   });
 }
 
-/* ---------- UI logic (flip, prize, confetti, etc.) ---------- */
+/* ---------- Interaction & UI logic ---------- */
 const prizes = [
   { label: "100% de bono + 1000 fichas", weight: 1 },
   { label: "150% de bono + 1500 fichas", weight: 1 },
@@ -129,7 +128,10 @@ function showPrize(prize) {
   const prizeText = document.getElementById('prize-text');
   const modal = document.getElementById('result');
   if (prizeText) prizeText.textContent = prize.label;
-  if (modal) { modal.classList.remove('hidden'); modal.classList.add('show'); }
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+  }
   explodeConfetti();
 }
 function hidePrize() {
@@ -140,29 +142,29 @@ function hidePrize() {
   if (confettiContainer) confettiContainer.innerHTML = '';
 }
 
-/* DOM ready: setup + interactions */
+/* ---------- DOM ready: setup + interactions ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   setupStars();
 
   const starButtons = Array.from(document.querySelectorAll('.star'));
   const closeBtn = document.getElementById('close-btn');
 
-  // sparkles initialization for each star
+  // initialize sparkles for each star (DOM helper below)
   starButtons.forEach(btn => initSparksFor(btn));
 
-  // restore click behavior: flip, pop, then reveal prize & confetti
+  // click handlers (restore flip/pop and prize reveal)
   starButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
       if (locked) return;
       locked = true;
       starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
       btn.classList.add('selected');
-      void btn.offsetWidth;
+      void btn.offsetWidth; // reflow
       btn.classList.add('pop','flip');
       await wait(760);
       const prize = weightedRandom(prizes);
       showPrize(prize);
-      // unlock when modal closed
+      // unlocking happens on modal close
     });
   });
 
@@ -173,8 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-/* ---------- confetti, sky canvas and sparks (unchanged) ---------- */
-
+/* ---------- Confetti (emoji) ---------- */
 function explodeConfetti() {
   const confettiContainer = document.getElementById('confetti');
   if (!confettiContainer) return;
@@ -191,16 +192,18 @@ function explodeConfetti() {
     el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     confettiContainer.appendChild(el);
+
     const duration = 1100 + Math.random()*1400;
     el.animate([
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
       { transform: `translateY(${80 + Math.random()*120}vh) rotate(${Math.random()*900 - 450}deg)`, opacity: 0.2 }
     ], { duration, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
+
     setTimeout(()=> { try { el.remove(); } catch(e){} }, duration+220);
   }
 }
 
-// sky canvas
+/* ---------- Canvas sky (twinkle) ---------- */
 const canvas = document.getElementById('sky');
 const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
 let skyStars = [], W=0, H=0;
@@ -268,7 +271,7 @@ function draw(now){
 resize();
 requestAnimationFrame(draw);
 
-// sparks per star element
+/* ---------- Sparks per star element ---------- */
 function initSparksFor(starEl){
   if (!starEl) return;
   const count = 3 + Math.floor(Math.random()*3);
@@ -290,7 +293,7 @@ function initSparksFor(starEl){
   }
 }
 
-// landing: remove dropping and enable clicks
+/* ---------- Landing animation and unlock ---------- */
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.body.classList.remove('dropping');
@@ -298,7 +301,7 @@ window.addEventListener('load', () => {
   }, 60);
 });
 
-// prevent selection
+/* prevent selection */
 document.addEventListener('selectstart', e => e.preventDefault());
 
-})();
+})(); 
