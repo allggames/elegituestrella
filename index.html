@@ -9,44 +9,22 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
-  <!-- Shared defs: halo filter and gradients (kept shared) -->
+  <!-- defs (filtros y degradados compartidos) -->
   <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
     <defs>
-      <!-- halo blur -->
       <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="g"/>
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g"/>
         <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
 
-      <!-- subtle inner shadow (for plastic look) -->
-      <filter id="insetShadow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
-        <feOffset dx="0" dy="2" result="offset"/>
-        <feComposite in="offset" in2="SourceAlpha" operator="out" result="cutout"/>
-        <feColorMatrix in="cutout" type="matrix" values="0 0 0 0 0
-                                                           0 0 0 0 0
-                                                           0 0 0 0 0
-                                                           0 0 0 0.35" result="shadow"/>
-        <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-
-      <!-- three star fills -->
       <linearGradient id="fill1" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff6d4"/>
-        <stop offset="50%" stop-color="#ffd75a"/>
-        <stop offset="100%" stop-color="#ffb000"/>
+        <stop offset="0%" stop-color="#fff6d4"/><stop offset="50%" stop-color="#ffd75a"/><stop offset="100%" stop-color="#ffb000"/>
       </linearGradient>
-
       <linearGradient id="fill2" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff7d9"/>
-        <stop offset="50%" stop-color="#ffea6a"/>
-        <stop offset="100%" stop-color="#ffbf00"/>
+        <stop offset="0%" stop-color="#fff7d9"/><stop offset="50%" stop-color="#ffea6a"/><stop offset="100%" stop-color="#ffbf00"/>
       </linearGradient>
-
       <linearGradient id="fill3" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff5d0"/>
-        <stop offset="50%" stop-color="#ffd34a"/>
-        <stop offset="100%" stop-color="#ff9e00"/>
+        <stop offset="0%" stop-color="#fff5d0"/><stop offset="50%" stop-color="#ffd34a"/><stop offset="100%" stop-color="#ff9e00"/>
       </linearGradient>
     </defs>
   </svg>
@@ -58,19 +36,17 @@
       <!-- Star 1 -->
       <button class="star final-1" data-index="0" aria-label="Estrella 1" role="listitem">
         <div class="star-inner" aria-hidden="true">
-          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <!-- halo path (per-star, will be filled by JS) -->
-            <path class="star-halo" d=""></path>
-            <!-- main fill path (per-star) -->
-            <path class="star-fill" d=""></path>
-            <!-- gloss -->
-            <ellipse class="star-gloss" cx="46" cy="34" rx="22" ry="9" transform="rotate(-18 46 34)"></ellipse>
-            <!-- brown outline (per-star) -->
-            <path class="star-outline" d=""></path>
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="star-group-1">
+              <path class="star-halo" d=""></path>
+              <path class="star-outline" d=""></path>
+              <path class="star-fill" d=""></path>
+              <path class="star-rim" d=""></path>
+              <ellipse class="star-gloss" cx="46" cy="34" rx="22" ry="9" transform="rotate(-18 46 34)"></ellipse>
+            </g>
           </svg>
 
-          <!-- reflection below -->
-          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
             <ellipse cx="60" cy="74" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
@@ -80,14 +56,17 @@
       <!-- Star 2 (center) -->
       <button class="star final-2" data-index="1" aria-label="Estrella 2" role="listitem">
         <div class="star-inner" aria-hidden="true">
-          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <path class="star-halo" d=""></path>
-            <path class="star-fill" d=""></path>
-            <ellipse class="star-gloss" cx="48" cy="33" rx="26" ry="12" transform="rotate(-16 48 33)"></ellipse>
-            <path class="star-outline" d=""></path>
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="star-group-2">
+              <path class="star-halo" d=""></path>
+              <path class="star-outline" d=""></path>
+              <path class="star-fill" d=""></path>
+              <path class="star-rim" d=""></path>
+              <ellipse class="star-gloss" cx="48" cy="33" rx="26" ry="12" transform="rotate(-16 48 33)"></ellipse>
+            </g>
           </svg>
 
-          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
             <ellipse cx="60" cy="78" rx="52" ry="12" fill="rgba(20,12,6,0.16)"/>
           </svg>
         </div>
@@ -97,14 +76,17 @@
       <!-- Star 3 -->
       <button class="star final-3" data-index="2" aria-label="Estrella 3" role="listitem">
         <div class="star-inner" aria-hidden="true">
-          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <path class="star-halo" d=""></path>
-            <path class="star-fill" d=""></path>
-            <ellipse class="star-gloss" cx="44" cy="36" rx="18" ry="8" transform="rotate(-22 44 36)"></ellipse>
-            <path class="star-outline" d=""></path>
+          <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="star-group-3">
+              <path class="star-halo" d=""></path>
+              <path class="star-outline" d=""></path>
+              <path class="star-fill" d=""></path>
+              <path class="star-rim" d=""></path>
+              <ellipse class="star-gloss" cx="44" cy="36" rx="18" ry="8" transform="rotate(-22 44 36)"></ellipse>
+            </g>
           </svg>
 
-          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
             <ellipse cx="60" cy="74" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
@@ -122,103 +104,6 @@
 
     <div id="confetti" aria-hidden="true"></div>
   </main>
-
-  <script>
-    // Create a proper 5-point star path (returns SVG 'd' string)
-    function makeStarPath(cx, cy, spikes, outerR, innerR) {
-      let rot = -Math.PI / 2; // start at top
-      const step = Math.PI / spikes;
-      let d = '';
-      for (let i = 0; i < spikes; i++) {
-        const xOuter = cx + Math.cos(rot) * outerR;
-        const yOuter = cy + Math.sin(rot) * outerR;
-        if (i === 0) d += `M ${xOuter} ${yOuter} `;
-        else d += `L ${xOuter} ${yOuter} `;
-        rot += step;
-        const xInner = cx + Math.cos(rot) * innerR;
-        const yInner = cy + Math.sin(rot) * innerR;
-        d += `L ${xInner} ${yInner} `;
-        rot += step;
-      }
-      d += 'Z';
-      return d;
-    }
-
-    // Assign independent paths to each star SVG so they don't share/overlap
-    function setupStars() {
-      const stars = document.querySelectorAll('.star');
-      const configs = [
-        { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)' },
-        { haloScale: 1.30, mainScaleY: 1.38, gradient: 'url(#fill2)' },
-        { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)' }
-      ];
-
-      stars.forEach((btn, i) => {
-        const svg = btn.querySelector('.star-svg');
-        const halo = svg.querySelector('.star-halo');
-        const fill = svg.querySelector('.star-fill');
-        const outline = svg.querySelector('.star-outline');
-        const gloss = svg.querySelector('.star-gloss');
-
-        // create base star shape centered in 60,60
-        const outer = 46;
-        const inner = 20; // smaller -> sharper points
-        const d = makeStarPath(60, 60, 5, outer, inner);
-
-        // set paths directly (each star gets its own path element)
-        halo.setAttribute('d', d);
-        fill.setAttribute('d', d);
-        outline.setAttribute('d', d);
-
-        // styles/transforms per star
-        const cfg = configs[i] || configs[0];
-
-        // halo: scaled slightly larger
-        halo.setAttribute('fill', cfg.gradient);
-        halo.setAttribute('opacity', '0.92');
-        halo.setAttribute('transform', `scale(${cfg.haloScale})`);
-        halo.setAttribute('filter', 'url(#haloBlur)');
-
-        // main fill: apply scaleY via transform (scaleX, scaleY)
-        fill.setAttribute('fill', cfg.gradient);
-        fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
-        fill.setAttribute('stroke-width', '1.1');
-        // we use separate transform to scale Y while keeping center: translate->scale->translate
-        // translate to origin, scale, translate back
-        const scaleX = 1;
-        const scaleY = cfg.mainScaleY;
-        const tx = 60, ty = 60;
-        fill.setAttribute('transform', `translate(${tx},${ty}) scale(${scaleX},${scaleY}) translate(${-tx},${-ty})`);
-
-        // outline (brown) slightly larger than main body
-        outline.setAttribute('fill', 'none');
-        outline.setAttribute('stroke', '#7a3e1f');
-        outline.setAttribute('stroke-width', i === 1 ? '9' : '8');
-        outline.setAttribute('stroke-linejoin', 'round');
-        outline.setAttribute('transform', `scale(${cfg.haloScale})`);
-
-        // gloss color
-        gloss.setAttribute('fill', 'rgba(255,255,255,0.95)');
-        gloss.setAttribute('opacity', '0.95');
-
-        // slightly adjust gloss position for center star
-        if (i === 1) {
-          gloss.setAttribute('cx', '50');
-          gloss.setAttribute('cy', '34');
-          gloss.setAttribute('rx', '26');
-          gloss.setAttribute('ry', '12');
-          gloss.setAttribute('transform', 'rotate(-16 50 34)');
-        }
-
-        // ensure each star's elements are independent (they are)
-      });
-    }
-
-    // run setup early (before landing animation ends)
-    window.addEventListener('DOMContentLoaded', () => {
-      setupStars();
-    });
-  </script>
 
   <script src="script.js"></script>
 </body>
