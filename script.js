@@ -31,7 +31,7 @@ function setupStars() {
 
   const configs = [
     { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 7 },
-    { haloScale: 1.23, mainScaleY: 1.30, gradient: 'url(#fill2)', outlineW: 8 },
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill2)', outlineW: 7 },
     { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 7 }
   ];
 
