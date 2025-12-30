@@ -169,7 +169,7 @@ function initSparksFor(starEl){
   }
 }
 
-/* landing: remove dropping and enable clicks */
+/* landing */
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.body.classList.remove('dropping');
