@@ -190,6 +190,22 @@
     }
     explodeConfetti();
   }
+
+// Muestra un aviso cuando ya se reclamó hoy (no dispara confetti)
+function showClaimed(prize) {
+  const prizeText = document.getElementById('prize-text');
+  const modal = document.getElementById('result');
+  // título del modal (si existe el elemento con id modal-title)
+  const titleEl = document.getElementById('modal-title') || (modal && modal.querySelector('h2'));
+  if (titleEl) titleEl.textContent = 'Ya reclamaste';
+  if (prizeText) prizeText.textContent = (prize && prize.label) ? prize.label : 'Premio reclamado';
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+  }
+  // NO llamar a explodeConfetti() — solo aviso
+}
+  
   function hidePrize() {
     const modal = document.getElementById('result');
     if (modal) modal.classList.remove('show');
@@ -214,17 +230,17 @@
       btn.dataset.assignedPrize = JSON.stringify(prize);
     });
 
-    // --- NEW: check if user already selected today ---
-    const existing = loadSelection();
-    if (existing) {
-      // lock UI and mark chosen star
-      locked = true;
-      disableAllStars();
-      const chosenBtn = starButtons[existing.index];
-      if (chosenBtn) chosenBtn.classList.add('selected');
-      // optionally show modal for previous selection:
-      // showPrize(existing.prize);
-    }
+// --- NEW: check if user already selected today ---
+const existing = loadSelection();
+if (existing) {
+  // lock UI and mark chosen star
+  locked = true;
+  disableAllStars();
+  const chosenBtn = starButtons[existing.index];
+  if (chosenBtn) chosenBtn.classList.add('selected');
+  // mostrar aviso con el premio reclamado (sin confetti)
+  showClaimed(existing.prize);
+}
 
     // click handlers (flip + pop + prize)
     starButtons.forEach((btn, idx) => {
