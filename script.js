@@ -191,9 +191,6 @@ requestAnimationFrame(draw);
    --------------------------- */
 window.addEventListener('load', () => {
   const totalDuration = 1100; // ms for transition
-  const waitFor = totalDuration + 420;
-
-  // Small initial timeout to ensure CSS applied then remove 'dropping'
   setTimeout(() => {
     document.body.classList.remove('dropping');
     setTimeout(() => { locked = false; }, 420); // enable clicks after landing
