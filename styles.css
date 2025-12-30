@@ -1,91 +1,123 @@
 :root{
-  --star-yellow: #ffd64d;
-  --star-yellow-dark: #ffbf00;
-  --bg: #f3f6fb;
+  --bg1: #fff6d6;
+  --bg2: #ffec9a;
+  --bg3: #ffd24a;
   --accent: #ffb84d;
+  --text: #1b2330;
 }
 
 *{box-sizing:border-box}
 body{
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg,#ffffff 0%, var(--bg) 100%);
   margin:0;
   padding:2rem;
+  min-height:100vh;
+  color:var(--text);
+  /* fondo degradado amarillo-dorado */
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  min-height:100vh;
-  color:#1b2330;
 }
 
 main{
   width:100%;
-  max-width:720px;
+  max-width:900px;
   text-align:center;
 }
 
 h1{
   margin:0 0 1.25rem;
   font-size:1.6rem;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 }
 
+/* Layout estrellas */
 .stars{
   display:flex;
-  gap:1.25rem;
+  gap:1.4rem;
   justify-content:center;
   align-items:end;
   margin-bottom:1.5rem;
+  perspective: 900px; /* para 3D flip */
 }
 
-/* Ajusta tamaños para dar efecto tipo imagen (estrella central más grande) */
-.star:nth-child(1) { transform: translateY(8px) scale(0.9); }
-.star:nth-child(2) { transform: translateY(0) scale(1.15); }
-.star:nth-child(3) { transform: translateY(8px) scale(0.9); }
-
+/* tamaños similares a la foto: central más grande */
 .star{
   background:transparent;
   border:0;
-  padding:0.25rem;
-  border-radius:12px;
+  padding:0;
   cursor:pointer;
-  transition:transform .18s ease, box-shadow .18s ease;
-  outline: none;
+  width:130px;
+  height:160px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  position:relative;
+  transform-origin:center bottom;
+  outline:none;
+}
+.star:nth-child(1){ transform: translateY(10px) scale(0.92); }
+.star:nth-child(2){ transform: translateY(0) scale(1.12); }
+.star:nth-child(3){ transform: translateY(10px) scale(0.92); }
+
+/* inner wrapper that flips */
+.star-inner{
+  width:100%;
+  height:100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(.2,.9,.25,1);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  position:relative;
 }
 
-.star:active{ transform: scale(.98); }
+/* flip class on button flips the inner (3D) */
+.star.flip .star-inner{
+  transform: rotateY(180deg);
+}
 
+/* The visible star SVG */
 .star-svg{
   width:110px;
   height:110px;
   display:block;
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
+  transform: translateZ(20px);
+  filter: drop-shadow(0 18px 22px rgba(0,0,0,0.12));
+  border-radius:12px;
 }
 
-/* estilo de la estrella (relleno y degradado) */
-.star-svg polygon{
-  fill: url(#grad) ;
-  stroke: rgba(0,0,0,0.06);
-  stroke-width:1;
-  transform-origin:center;
-  transition: transform .4s cubic-bezier(.2,.8,.25,1), filter .25s;
-  filter: drop-shadow(0 8px 10px rgba(255,170,0,0.08));
-  transform: translateY(0);
+/* reflection SVG (mirrored) */
+.star-reflection{
+  width:110px;
+  height:110px;
+  display:block;
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%) scaleY(-1) translateY(36px);
+  opacity:0.42;
+  filter: blur(6px) saturate(0.9);
+  /* máscara para que se desvanezca hacia abajo */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0));
+  pointer-events:none;
 }
 
-/* cuando está seleccionada */
-.star.selected .star-svg polygon{
-  transform: scale(1.12) rotate(-6deg);
-  filter: drop-shadow(0 14px 18px rgba(255,165,0,0.18));
-}
+/* pequeño brillo y borde */
+.star-svg polygon{ transition: transform .35s ease, filter .25s; transform-origin:center; }
 
-/* Animación pop */
-.star.pop {
-  animation: pop .65s ease forwards;
+/* cuando esté "selected" le damos un pop y leve rotación */
+.star.selected .star-svg{ transform: translateZ(28px) scale(1.05) rotate(-4deg); filter: drop-shadow(0 28px 28px rgba(255,160,0,0.16)); }
+
+/* animación pop (para añadir clase pop) */
+.star.pop .star-svg{
+  animation: pop .56s cubic-bezier(.2,.9,.2,1);
 }
 @keyframes pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.25) rotate(6deg); }
-  100% { transform: scale(1.08) rotate(0); }
+  0%{ transform: translateZ(20px) scale(1); }
+  40%{ transform: translateZ(40px) scale(1.28) rotate(6deg); }
+  100%{ transform: translateZ(28px) scale(1.06) rotate(0); }
 }
 
 /* Modal */
@@ -102,7 +134,7 @@ h1{
   padding:1.25rem 1.5rem;
   border-radius:12px;
   box-shadow:0 20px 40px rgba(20,30,50,0.12);
-  min-width:260px;
+  min-width:280px;
   transform: translateY(14px);
   opacity:0;
   transition:all .28s ease;
@@ -125,7 +157,7 @@ h1{
   overflow:hidden;
 }
 
-/* botón */
+/* estilo botón modal */
 #close-btn{
   margin-top:0.75rem;
   padding:0.5rem 0.9rem;
@@ -134,4 +166,11 @@ h1{
   color:white;
   border-radius:8px;
   cursor:pointer;
+}
+
+/* responsive */
+@media (max-width:520px){
+  .stars{ gap:0.8rem; }
+  .star{ width:92px; height:120px; }
+  .star-svg, .star-reflection{ width:84px; height:84px; }
 }
