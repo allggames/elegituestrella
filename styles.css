@@ -1,7 +1,6 @@
 :root{
   --accent: #ffbf4d;
   --modal-bg: #ffffff;
-  --shadow: rgba(0,0,0,0.28);
 }
 
 /* Reset y layout */
@@ -20,15 +19,15 @@ body{
 main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; align-items:center; justify-content:center; pointer-events:none; }
 
 /* contenedor y posicion central */
-.stars{ display:flex; gap:2.2rem; align-items:flex-end; justify-content:center; perspective:1100px; pointer-events:auto; }
+.stars{ display:flex; gap:2.4rem; align-items:flex-end; justify-content:center; perspective:1100px; pointer-events:auto; }
 
 /* botón estrella */
 .star{
   background:transparent;
   border:0;
   padding:0;
-  width:220px;
-  height:250px;
+  width:240px;
+  height:260px;
   display:flex;
   align-items:flex-end;
   justify-content:center;
@@ -40,41 +39,36 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
   z-index:3;
 }
 
-/* estado inicial: están fuera de pantalla (clase body.dropping) */
+/* dropping state: start off-screen; final-* define final placement */
 .dropping .star {
-  transform: translateY(-120vh) scale(0.95);
+  transform: translateY(-120vh) scale(0.97);
   transition: transform 1000ms cubic-bezier(.22,.9,.3,1);
 }
+.final-1 { transform: translateY(18px) scale(0.98); transition-delay: 200ms; }
+.final-2 { transform: translateY(0) scale(1.26);  transition-delay: 100ms; }
+.final-3 { transform: translateY(18px) scale(0.98); transition-delay: 320ms; }
 
-/* posiciones finales (se aplican al quitar body.dropping) */
-.final-1 { transform: translateY(18px) scale(0.96); transition-delay: 220ms; }
-.final-2 { transform: translateY(0) scale(1.24);  transition-delay: 100ms;  }
-.final-3 { transform: translateY(18px) scale(0.96); transition-delay: 340ms; }
-
-/* wrapper que gira (3D) */
+/* star inner wrapper for flip */
 .star-inner{ width:100%; height:100%; transform-style:preserve-3d; transition: transform 0.85s cubic-bezier(.2,.9,.25,1); display:flex; align-items:flex-end; justify-content:center; position:relative; z-index:4; }
 
 /* flip */
 .star.flip .star-inner{ transform: rotateY(180deg); }
 
-/* SVG */
-.star-svg{ width:190px; height:190px; transform: translateZ(36px); display:block; border-radius:12px; z-index:5; background:transparent; overflow:visible; }
+/* SVG size */
+.star-svg{ width:210px; height:210px; transform: translateZ(36px); display:block; border-radius:12px; z-index:5; background:transparent; overflow:visible; }
 
-/* halo inside svg is sole glow */
-.halo{ opacity:0.94; }
+/* Keep star shape transform in SVG (no CSS duplicate shapes) */
+.star-shape{ transition: transform .18s ease; }
 
-/* shape "gordita" achieved in SVG transform; keep CSS neutral */
-.star-path{ transition: transform .28s ease; }
-
-/* reflection fade via mask (no rects) */
+/* reflection fade via mask; reflection uses a blurred ellipse (no rect) */
 .star-reflection{
-  width:190px;
-  height:190px;
+  width:210px;
+  height:210px;
   position:absolute;
   left:50%;
-  transform: translateX(-50%) scaleY(-1) translateY(74px) scale(0.98);
+  transform: translateX(-50%) scaleY(-1) translateY(80px) scale(0.96);
   opacity:0.78;
-  filter: blur(4px) saturate(.98);
+  filter: blur(6px) saturate(.98);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0));
   mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0));
   pointer-events:none;
@@ -87,27 +81,27 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
   left:50%;
   bottom:8%;
   transform:translateX(-50%);
-  width:120px;
-  height:18px;
+  width:140px;
+  height:20px;
   border-radius:50%;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.36), rgba(0,0,0,0.16), rgba(0,0,0,0));
-  filter: blur(8px);
-  opacity:0.92;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.36), rgba(0,0,0,0.12), rgba(0,0,0,0));
+  filter: blur(10px);
+  opacity:0.95;
   pointer-events:none;
   z-index:1;
 }
 
 /* selected/pop */
-.star.selected .star-svg{ transform: translateZ(56px) scale(1.06) rotate(-4deg); filter: drop-shadow(0 40px 44px rgba(0,0,0,0.22)); }
+.star.selected .star-svg{ transform: translateZ(56px) scale(1.04) rotate(-4deg); filter: drop-shadow(0 36px 44px rgba(0,0,0,0.22)); }
 .star.pop .star-svg{ animation: pop .56s cubic-bezier(.2,.9,.2,1); }
 @keyframes pop {
   0%{ transform: translateZ(36px) scale(1); }
-  40%{ transform: translateZ(66px) scale(1.36) rotate(6deg); }
-  100%{ transform: translateZ(56px) scale(1.06) rotate(0); }
+  40%{ transform: translateZ(66px) scale(1.28) rotate(6deg); }
+  100%{ transform: translateZ(56px) scale(1.04) rotate(0); }
 }
 
 /* sparkles (JS creates them) */
-.star .spark{ position:absolute; border-radius:50%; pointer-events:none; z-index:6; opacity:0; transform: scale(0.6); filter: blur(0.8px) drop-shadow(0 1px 6px rgba(255,200,80,0.18)); will-change: opacity, transform; }
+.star .spark{ position:absolute; border-radius:50%; pointer-events:none; z-index:6; opacity:0; transform: scale(0.6); filter: blur(0.9px) drop-shadow(0 1px 6px rgba(255,200,80,0.18)); will-change: opacity, transform; }
 @keyframes sparkPulse {
   0% { opacity: 0; transform: scale(0.5) translateY(0); }
   20% { opacity: 1; transform: scale(1.05) translateY(-4px); }
@@ -126,7 +120,7 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
 
 /* responsive */
 @media (max-width:600px){
-  .star{ width:140px; height:170px; }
-  .star-svg,.star-reflection{ width:120px; height:120px; transform: translateZ(24px); }
-  .ground-shadow{ width:80px; height:12px; filter: blur(6px); }
+  .star{ width:160px; height:180px; }
+  .star-svg,.star-reflection{ width:140px; height:140px; transform: translateZ(24px); }
+  .ground-shadow{ width:90px; height:12px; filter: blur(6px); }
 }
