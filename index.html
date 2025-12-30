@@ -9,42 +9,32 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
-  <!-- Shared SVG defs: base rounded-star path, halo filter, gradients -->
+  <!-- Shared SVG defs: path vacío que rellenaremos desde JS -->
   <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
     <defs>
-      <!-- Rounded star path (curved points for a softer, "gordita" look) -->
-      <path id="roundStarPath"
-        d="M60 10
-           C66 20 78 26 92 30
-           C84 38 80 50 86 66
-           C72 60 62 72 60 88
-           C56 72 46 60 32 66
-           C38 50 34 38 26 30
-           C40 26 54 20 60 10 Z" />
-
-      <!-- large halo blur to avoid clipping -->
+      <path id="starPath" d="" />
       <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
         <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="g"/>
         <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
 
-      <!-- gradients for three stars -->
       <linearGradient id="grad1" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff9d9"/>
-        <stop offset="40%" stop-color="#ffe57f"/>
-        <stop offset="100%" stop-color="#ffb800"/>
+        <stop offset="0%" stop-color="#fffbe3"/>
+        <stop offset="30%" stop-color="#ffe87a"/>
+        <stop offset="65%" stop-color="#ffd100"/>
+        <stop offset="100%" stop-color="#ff9f00"/>
       </linearGradient>
-
       <linearGradient id="grad2" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fffbe6"/>
-        <stop offset="40%" stop-color="#ffea8f"/>
-        <stop offset="100%" stop-color="#ffbe00"/>
-      </linearGradient>
-
-      <linearGradient id="grad3" x1="0" x2="1">
-        <stop offset="0%" stop-color="#fff7d6"/>
-        <stop offset="40%" stop-color="#ffe37f"/>
+        <stop offset="0%" stop-color="#fffce6"/>
+        <stop offset="30%" stop-color="#ffef96"/>
+        <stop offset="65%" stop-color="#ffd400"/>
         <stop offset="100%" stop-color="#ffad00"/>
+      </linearGradient>
+      <linearGradient id="grad3" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fff8d8"/>
+        <stop offset="30%" stop-color="#ffe67f"/>
+        <stop offset="65%" stop-color="#ffc900"/>
+        <stop offset="100%" stop-color="#ff9400"/>
       </linearGradient>
     </defs>
   </svg>
@@ -57,13 +47,13 @@
       <button class="star final-1" data-index="0" aria-label="Estrella 1" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <use href="#roundStarPath" fill="url(#grad1)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"/>
-            <use href="#roundStarPath" fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.0" transform="scale(1,1.18)"/>
-            <ellipse cx="46" cy="34" rx="20" ry="9" fill="rgba(255,255,255,0.94)" transform="rotate(-18 46 34)" opacity="0.92"/>
+            <use href="#starPath" fill="url(#grad1)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"></use>
+            <use href="#starPath" fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.28)"></use>
+            <ellipse cx="46" cy="34" rx="20" ry="9" fill="rgba(255,255,255,0.94)" transform="rotate(-20 46 34)" opacity="0.94"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="72" rx="42" ry="10" fill="rgba(20,12,6,0.14)"/>
+            <ellipse cx="60" cy="72" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
         <div class="ground-shadow" aria-hidden="true"></div>
@@ -73,13 +63,13 @@
       <button class="star final-2" data-index="1" aria-label="Estrella 2" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <use href="#roundStarPath" fill="url(#grad2)" opacity="0.94" transform="scale(1.30)" filter="url(#haloBlur)"/>
-            <use href="#roundStarPath" fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.0" transform="scale(1,1.30)"/>
-            <ellipse cx="48" cy="33" rx="24" ry="11" fill="rgba(255,255,255,0.96)" transform="rotate(-16 48 33)" opacity="0.95"/>
+            <use href="#starPath" fill="url(#grad2)" opacity="0.94" transform="scale(1.28)" filter="url(#haloBlur)"></use>
+            <use href="#starPath" fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.38)"></use>
+            <ellipse cx="48" cy="33" rx="24" ry="11" fill="rgba(255,255,255,0.96)" transform="rotate(-18 48 33)" opacity="0.96"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="76" rx="52" ry="12" fill="rgba(20,12,6,0.16)"/>
+            <ellipse cx="60" cy="74" rx="52" ry="12" fill="rgba(20,12,6,0.16)"/>
           </svg>
         </div>
         <div class="ground-shadow" aria-hidden="true"></div>
@@ -89,13 +79,13 @@
       <button class="star final-3" data-index="2" aria-label="Estrella 3" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <use href="#roundStarPath" fill="url(#grad3)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"/>
-            <use href="#roundStarPath" fill="url(#grad3)" stroke="rgba(0,0,0,0.06)" stroke-width="1.0" transform="scale(1,1.18)"/>
-            <ellipse cx="44" cy="36" rx="18" ry="8" fill="rgba(255,255,255,0.92)" transform="rotate(-22 44 36)" opacity="0.92"/>
+            <use href="#starPath" fill="url(#grad3)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"></use>
+            <use href="#starPath" fill="url(#grad3)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.28)"></use>
+            <ellipse cx="44" cy="36" rx="18" ry="8" fill="rgba(255,255,255,0.92)" transform="rotate(-24 44 36)" opacity="0.92"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="72" rx="42" ry="10" fill="rgba(20,12,6,0.14)"/>
+            <ellipse cx="60" cy="72" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
         <div class="ground-shadow" aria-hidden="true"></div>
