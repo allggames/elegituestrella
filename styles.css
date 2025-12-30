@@ -1,0 +1,137 @@
+:root{
+  --star-yellow: #ffd64d;
+  --star-yellow-dark: #ffbf00;
+  --bg: #f3f6fb;
+  --accent: #ffb84d;
+}
+
+*{box-sizing:border-box}
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,#ffffff 0%, var(--bg) 100%);
+  margin:0;
+  padding:2rem;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  color:#1b2330;
+}
+
+main{
+  width:100%;
+  max-width:720px;
+  text-align:center;
+}
+
+h1{
+  margin:0 0 1.25rem;
+  font-size:1.6rem;
+}
+
+.stars{
+  display:flex;
+  gap:1.25rem;
+  justify-content:center;
+  align-items:end;
+  margin-bottom:1.5rem;
+}
+
+/* Ajusta tamaños para dar efecto tipo imagen (estrella central más grande) */
+.star:nth-child(1) { transform: translateY(8px) scale(0.9); }
+.star:nth-child(2) { transform: translateY(0) scale(1.15); }
+.star:nth-child(3) { transform: translateY(8px) scale(0.9); }
+
+.star{
+  background:transparent;
+  border:0;
+  padding:0.25rem;
+  border-radius:12px;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease;
+  outline: none;
+}
+
+.star:active{ transform: scale(.98); }
+
+.star-svg{
+  width:110px;
+  height:110px;
+  display:block;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
+}
+
+/* estilo de la estrella (relleno y degradado) */
+.star-svg polygon{
+  fill: url(#grad) ;
+  stroke: rgba(0,0,0,0.06);
+  stroke-width:1;
+  transform-origin:center;
+  transition: transform .4s cubic-bezier(.2,.8,.25,1), filter .25s;
+  filter: drop-shadow(0 8px 10px rgba(255,170,0,0.08));
+  transform: translateY(0);
+}
+
+/* cuando está seleccionada */
+.star.selected .star-svg polygon{
+  transform: scale(1.12) rotate(-6deg);
+  filter: drop-shadow(0 14px 18px rgba(255,165,0,0.18));
+}
+
+/* Animación pop */
+.star.pop {
+  animation: pop .65s ease forwards;
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25) rotate(6deg); }
+  100% { transform: scale(1.08) rotate(0); }
+}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  pointer-events:none;
+}
+.modal .modal-content{
+  background:white;
+  padding:1.25rem 1.5rem;
+  border-radius:12px;
+  box-shadow:0 20px 40px rgba(20,30,50,0.12);
+  min-width:260px;
+  transform: translateY(14px);
+  opacity:0;
+  transition:all .28s ease;
+  pointer-events:auto;
+}
+.modal.show .modal-content{
+  transform: translateY(0);
+  opacity:1;
+}
+.hidden{ display:none !important; }
+
+/* confetti container */
+#confetti{
+  position:fixed;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+/* botón */
+#close-btn{
+  margin-top:0.75rem;
+  padding:0.5rem 0.9rem;
+  background:var(--accent);
+  border:0;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+}
