@@ -7,114 +7,136 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Canvas para cielo estrellado (fondo) -->
+  <canvas id="sky"></canvas>
+
   <main>
-    <h1>Elige una estrella</h1>
+    <h1 class="visually-hidden">Elige una estrella</h1>
 
-    <div class="stars" role="list">
-      <button class="star" data-index="0" aria-label="Estrella 1" role="listitem">
-        <div class="star-inner">
-          <!-- SVG con gradiente -->
-          <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
+    <div class="stars" role="list" aria-label="Elige una estrella">
+      <button class="star" data-index="0" aria-label="Estrella izquierda" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg">
             <defs>
-              <linearGradient id="grad0" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff7c7"/>
-                <stop offset="18%" stop-color="#ffe58a"/>
-                <stop offset="60%" stop-color="#ffc61a"/>
-                <stop offset="100%" stop-color="#ffb000"/>
+              <linearGradient id="gA" x1="0" x2="1">
+                <stop offset="0%" stop-color="#fff9c9"/>
+                <stop offset="25%" stop-color="#ffe37a"/>
+                <stop offset="70%" stop-color="#ffc400"/>
+                <stop offset="100%" stop-color="#ff9f00"/>
               </linearGradient>
-              <!-- máscara para el reflejo -->
-              <linearGradient id="fade" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
-                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
-                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <radialGradient id="shine" cx="35%" cy="30%" r="40%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.22)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </radialGradient>
+              <linearGradient id="fadeDown" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>
+                <stop offset="60%" stop-color="rgba(255,255,255,0.12)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               </linearGradient>
             </defs>
 
-            <!-- estrella "gordita" (aplicamos escala leve por CSS también) -->
-            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-              fill="url(#grad0)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
+            <!-- forma "suavizada" tipo estrella (más redondeada) -->
+            <path class="star-path"
+              d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+              fill="url(#gA)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" filter="url(#softGlow)"/>
             <!-- brillo superior -->
-            <ellipse cx="36" cy="32" rx="20" ry="9" fill="rgba(255,255,255,0.55)" transform="rotate(-22 36 32)" />
+            <ellipse cx="44" cy="36" rx="20" ry="9" fill="url(#shine)" transform="rotate(-22 44 36)"/>
           </svg>
 
-          <!-- reflection: misma forma volteada y enmascarada -->
-          <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
+          <!-- Reflection (misma forma invertida, con blur y máscara de desvanecimiento) -->
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
             <defs>
-              <linearGradient id="grad0-ref" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff7c7"/>
-                <stop offset="18%" stop-color="#ffe58a"/>
-                <stop offset="60%" stop-color="#ffc61a"/>
-                <stop offset="100%" stop-color="#ffb000"/>
+              <linearGradient id="gAref" x1="0" x2="1">
+                <stop offset="0%" stop-color="#fff9c9"/>
+                <stop offset="25%" stop-color="#ffe37a"/>
+                <stop offset="70%" stop-color="#ffc400"/>
+                <stop offset="100%" stop-color="#ff9f00"/>
               </linearGradient>
             </defs>
-            <g style="opacity:0.78; filter: blur(5px) saturate(1.05);">
-              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-                fill="url(#grad0-ref)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+            <g style="opacity:0.78; filter: blur(4px) saturate(1.02);">
+              <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+                fill="url(#gAref)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <!-- máscara de desvanecimiento -->
-            <rect x="0" y="0" width="100" height="100" fill="url(#fade)" />
+            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
 
-      <button class="star" data-index="1" aria-label="Estrella 2" role="listitem">
-        <div class="star-inner">
-          <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
+      <button class="star" data-index="1" aria-label="Estrella central" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg">
             <defs>
-              <linearGradient id="grad1" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff8cf"/>
-                <stop offset="18%" stop-color="#ffeaa0"/>
-                <stop offset="55%" stop-color="#ffd13c"/>
-                <stop offset="100%" stop-color="#ffb300"/>
+              <linearGradient id="gB" x1="0" x2="1">
+                <stop offset="0%" stop-color="#fffbe0"/>
+                <stop offset="20%" stop-color="#ffeb91"/>
+                <stop offset="60%" stop-color="#ffd000"/>
+                <stop offset="100%" stop-color="#ffac00"/>
               </linearGradient>
-              <linearGradient id="fade1" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="white" stop-opacity="0.62"/>
-                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
-                <stop offset="100%" stop-color="white" stop-opacity="0"/>
-              </linearGradient>
+              <filter id="softGlowB" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <radialGradient id="shineB" cx="36%" cy="30%" r="38%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.22)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </radialGradient>
             </defs>
-            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-              fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
-            <ellipse cx="36" cy="32" rx="22" ry="10" fill="rgba(255,255,255,0.52)" transform="rotate(-20 36 32)" />
+
+            <path class="star-path"
+              d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+              fill="url(#gB)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" filter="url(#softGlowB)"/>
+            <ellipse cx="46" cy="34" rx="24" ry="11" fill="url(#shineB)" transform="rotate(-20 46 34)"/>
           </svg>
 
-          <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
-            <g style="opacity:0.78; filter: blur(5px) saturate(1.03);">
-              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-                fill="url(#grad1)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
+            <g style="opacity:0.82; filter: blur(4px) saturate(1.03);">
+              <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+                fill="url(#gB)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <rect x="0" y="0" width="100" height="100" fill="url(#fade1)" />
+            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
 
-      <button class="star" data-index="2" aria-label="Estrella 3" role="listitem">
-        <div class="star-inner">
-          <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
+      <button class="star" data-index="2" aria-label="Estrella derecha" role="listitem">
+        <div class="star-inner" aria-hidden="true">
+          <svg viewBox="0 0 120 120" class="star-svg">
             <defs>
-              <linearGradient id="grad2" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff6bf"/>
-                <stop offset="25%" stop-color="#ffd85a"/>
-                <stop offset="60%" stop-color="#ffb900"/>
-                <stop offset="100%" stop-color="#ff9900"/>
+              <linearGradient id="gC" x1="0" x2="1">
+                <stop offset="0%" stop-color="#fff7c8"/>
+                <stop offset="25%" stop-color="#ffe48f"/>
+                <stop offset="65%" stop-color="#ffbf00"/>
+                <stop offset="100%" stop-color="#ff9400"/>
               </linearGradient>
-              <linearGradient id="fade2" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
-                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
-                <stop offset="100%" stop-color="white" stop-opacity="0"/>
-              </linearGradient>
+              <filter id="softGlowC" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <radialGradient id="shineC" cx="34%" cy="32%" r="40%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.2)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </radialGradient>
             </defs>
-            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-              fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
-            <ellipse cx="36" cy="32" rx="18" ry="8" fill="rgba(255,255,255,0.5)" transform="rotate(-24 36 32)" />
+
+            <path class="star-path"
+              d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+              fill="url(#gC)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" filter="url(#softGlowC)"/>
+            <ellipse cx="44" cy="36" rx="18" ry="8" fill="url(#shineC)" transform="rotate(-24 44 36)"/>
           </svg>
 
-          <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
-            <g style="opacity:0.78; filter: blur(5px) saturate(1.04);">
-              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
-                fill="url(#grad2)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+          <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
+            <g style="opacity:0.76; filter: blur(4px) saturate(1.02);">
+              <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
+                fill="url(#gC)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <rect x="0" y="0" width="100" height="100" fill="url(#fade2)" />
+            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
