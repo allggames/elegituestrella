@@ -9,113 +9,94 @@
 <body class="dropping">
   <canvas id="sky"></canvas>
 
+  <!-- Definiciones compartidas: forma base, filtros y gradientes -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- base star path -->
+      <path id="starPath" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z" />
+
+      <!-- halo blur (large bounding box to avoid clipping) -->
+      <filter id="haloBlur" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="g"/>
+        <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+
+      <!-- three gradients for the three stars -->
+      <linearGradient id="grad1" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fffbe3"/>
+        <stop offset="30%" stop-color="#ffe87a"/>
+        <stop offset="65%" stop-color="#ffd100"/>
+        <stop offset="100%" stop-color="#ff9f00"/>
+      </linearGradient>
+
+      <linearGradient id="grad2" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fffce6"/>
+        <stop offset="30%" stop-color="#ffef96"/>
+        <stop offset="65%" stop-color="#ffd400"/>
+        <stop offset="100%" stop-color="#ffad00"/>
+      </linearGradient>
+
+      <linearGradient id="grad3" x1="0" x2="1">
+        <stop offset="0%" stop-color="#fff8d8"/>
+        <stop offset="30%" stop-color="#ffe67f"/>
+        <stop offset="65%" stop-color="#ffc900"/>
+        <stop offset="100%" stop-color="#ff9400"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
   <main>
     <h1 class="visually-hidden">Elige una estrella</h1>
 
     <div class="stars" role="list" aria-label="Elige una estrella">
-      <!-- Estrella 1 -->
-      <button class="star final-1" data-index="0" aria-label="Estrella izquierda" role="listitem">
+      <!-- Star 1 -->
+      <button class="star final-1" data-index="0" aria-label="Estrella 1" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <defs>
-              <linearGradient id="g1" x1="0" x2="1">
-                <stop offset="0%" stop-color="#fffbe3"/>
-                <stop offset="30%" stop-color="#ffe87a"/>
-                <stop offset="65%" stop-color="#ffd100"/>
-                <stop offset="100%" stop-color="#ff9f00"/>
-              </linearGradient>
-              <filter id="halo1" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g" />
-                <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-
-            <!-- halo (misma forma aplicada con blur) -->
-            <path class="p-halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g1)" opacity="0.92" transform="scale(1.22)" filter="url(#halo1)" />
-
-            <!-- forma principal (gordita con scaleY) -->
-            <path class="p-main" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.36)" />
-
-            <!-- brillo / specular -->
-            <ellipse cx="46" cy="34" rx="22" ry="10" fill="rgba(255,255,255,0.95)" transform="rotate(-20 46 34)" opacity="0.93"/>
+            <!-- halo: exacta misma forma con blur - alineada -->
+            <use href="#starPath" fill="url(#grad1)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"></use>
+            <!-- main: misma forma, solo un uso, scaleY para gordita -->
+            <use href="#starPath" fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.45)"></use>
+            <!-- glossy highlight (simple ellipse) -->
+            <ellipse cx="46" cy="34" rx="22" ry="10" fill="rgba(255,255,255,0.94)" transform="rotate(-20 46 34)" opacity="0.94"/>
           </svg>
 
-          <!-- reflection (ellipse blur), el fade se hace por mask en CSS -->
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="70" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
+            <ellipse cx="60" cy="72" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
-
         <div class="ground-shadow" aria-hidden="true"></div>
       </button>
 
-      <!-- Estrella 2 (central, un poco más grande) -->
-      <button class="star final-2" data-index="1" aria-label="Estrella central" role="listitem">
+      <!-- Star 2 (center, larger) -->
+      <button class="star final-2" data-index="1" aria-label="Estrella 2" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <defs>
-              <linearGradient id="g2" x1="0" x2="1">
-                <stop offset="0%" stop-color="#fffce6"/>
-                <stop offset="30%" stop-color="#ffef96"/>
-                <stop offset="65%" stop-color="#ffd400"/>
-                <stop offset="100%" stop-color="#ffad00"/>
-              </linearGradient>
-              <filter id="halo2" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="g" />
-                <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-
-            <path class="p-halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g2)" opacity="0.94" transform="scale(1.26)" filter="url(#halo2)" />
-
-            <path class="p-main" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.44)" />
-
+            <use href="#starPath" fill="url(#grad2)" opacity="0.94" transform="scale(1.28)" filter="url(#haloBlur)"></use>
+            <use href="#starPath" fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.55)"></use>
             <ellipse cx="48" cy="33" rx="26" ry="12" fill="rgba(255,255,255,0.97)" transform="rotate(-18 48 33)" opacity="0.96"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="72" rx="50" ry="12" fill="rgba(20,12,6,0.16)"/>
+            <ellipse cx="60" cy="74" rx="52" ry="12" fill="rgba(20,12,6,0.16)"/>
           </svg>
         </div>
-
         <div class="ground-shadow" aria-hidden="true"></div>
       </button>
 
-      <!-- Estrella 3 -->
-      <button class="star final-3" data-index="2" aria-label="Estrella derecha" role="listitem">
+      <!-- Star 3 -->
+      <button class="star final-3" data-index="2" aria-label="Estrella 3" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible" aria-hidden="true">
-            <defs>
-              <linearGradient id="g3" x1="0" x2="1">
-                <stop offset="0%" stop-color="#fff8d8"/>
-                <stop offset="30%" stop-color="#ffe67f"/>
-                <stop offset="65%" stop-color="#ffc900"/>
-                <stop offset="100%" stop-color="#ff9400"/>
-              </linearGradient>
-              <filter id="halo3" x="-200%" y="-200%" width="500%" height="500%" filterUnits="userSpaceOnUse">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="g" />
-                <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-
-            <path class="p-halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g3)" opacity="0.92" transform="scale(1.22)" filter="url(#halo3)" />
-
-            <path class="p-main" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#g3)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.36)" />
-
+            <use href="#starPath" fill="url(#grad3)" opacity="0.92" transform="scale(1.22)" filter="url(#haloBlur)"></use>
+            <use href="#starPath" fill="url(#grad3)" stroke="rgba(0,0,0,0.06)" stroke-width="1.1" transform="scale(1,1.45)"></use>
             <ellipse cx="44" cy="36" rx="20" ry="9" fill="rgba(255,255,255,0.92)" transform="rotate(-24 44 36)" opacity="0.92"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <ellipse cx="60" cy="70" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
+            <ellipse cx="60" cy="72" rx="44" ry="10" fill="rgba(20,12,6,0.14)"/>
           </svg>
         </div>
-
         <div class="ground-shadow" aria-hidden="true"></div>
       </button>
     </div>
