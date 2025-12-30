@@ -1,17 +1,18 @@
 // script.js
-// Reemplaza el anterior: asigna la ruta de la estrella a CADA SVG (para evitar solapamientos)
-// y conserva el resto de la lógica (clicks, confetti, canvas, sparkles, landing).
+// Versión corregida: asigna rutas / elementos independientes a cada SVG de estrella,
+// inicializa sparkles por estrella y conserva el resto de la lógica (clicks, confetti, canvas).
 
-// Crea la ruta de una estrella de 5 puntas (string "d")
+/* ---------------------------
+   Geometry: crear "d" para estrella de 5 puntas
+   --------------------------- */
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
-  let rot = -Math.PI / 2; // empezar arriba
+  let rot = -Math.PI / 2; // start at top
   const step = Math.PI / spikes;
   let d = '';
   for (let i = 0; i < spikes; i++) {
     const xOuter = cx + Math.cos(rot) * outerR;
     const yOuter = cy + Math.sin(rot) * outerR;
-    if (i === 0) d += `M ${xOuter} ${yOuter} `;
-    else d += `L ${xOuter} ${yOuter} `;
+    d += (i === 0 ? `M ${xOuter} ${yOuter} ` : `L ${xOuter} ${yOuter} `);
     rot += step;
     const xInner = cx + Math.cos(rot) * innerR;
     const yInner = cy + Math.sin(rot) * innerR;
@@ -22,103 +23,143 @@ function makeStarPath(cx, cy, spikes, outerR, innerR) {
   return d;
 }
 
-// Asigna rutas/estilos por estrella (cada SVG tiene sus propios path)
+/* ---------------------------
+   Setup per-star SVG: halo, outline, fill, rim, gloss
+   Each star gets its own path elements (no shared <use>)
+   --------------------------- */
 function setupStars() {
   const starEls = Array.from(document.querySelectorAll('.star'));
   if (!starEls.length) return;
 
-  // configuración por estrella: haloScale, scaleY para el cuerpo y el fill gradient
+  // Per-star visual configs (halo scale, vertical scale for "gordito", gradient id, outline width)
   const configs = [
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineWidth: 8 },
-    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineWidth: 9 },
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineWidth: 8 }
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 8 },
+    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineW: 9 },
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 8 }
   ];
 
-  // parámetros geométricos (centro 60,60 de los viewBox 0..120)
+  // Base star geometry (centered in 0..120 viewBox at 60,60)
   const cx = 60, cy = 60;
-  const outer = 46;
-  const inner = 20;
+  const outer = 46, inner = 20;
   const d = makeStarPath(cx, cy, 5, outer, inner);
 
   starEls.forEach((btn, i) => {
     const svg = btn.querySelector('.star-svg');
     if (!svg) return;
 
-    const halo = svg.querySelector('.star-halo');
-    const fill = svg.querySelector('.star-fill');
-    const outline = svg.querySelector('.star-outline');
-    const gloss = svg.querySelector('.star-gloss');
+    // Find or create elements inside this SVG so each star is independent
+    function ensure(tag, cls, attrs = {}) {
+      let el = svg.querySelector(`.${cls}`);
+      if (!el) {
+        el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        el.setAttribute('class', cls);
+        svg.insertBefore(el, svg.firstChild);
+      }
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+      return el;
+    }
+
+    const halo = ensure('path', 'star-halo');
+    const outline = ensure('path', 'star-outline');
+    const fill = ensure('path', 'star-fill');
+    const rim = ensure('path', 'star-rim');
+    const gloss = svg.querySelector('.star-gloss') || ensure('ellipse', 'star-gloss', { cx: 46, cy: 34, rx: 22, ry: 9 });
 
     const cfg = configs[i] || configs[0];
 
-    // Aseguramos que existan los elementos; si no, los creamos
-    if (!halo) {
-      console.warn('star-halo no encontrado en estrella', i);
-    } else {
-      halo.setAttribute('d', d);
-      halo.setAttribute('fill', cfg.gradient);
-      halo.setAttribute('opacity', '0.92');
-      // preferimos usar el filtro SVG compartido
-      halo.setAttribute('filter', 'url(#haloBlur)');
-      halo.setAttribute('transform', `translate(${cx},${cy}) scale(${cfg.haloScale}) translate(${-cx},${-cy})`);
-    }
+    // Assign the same geometry to each path (independent elements)
+    halo.setAttribute('d', d);
+    outline.setAttribute('d', d);
+    fill.setAttribute('d', d);
+    rim.setAttribute('d', d);
 
-    if (!fill) {
-      console.warn('star-fill no encontrado en estrella', i);
-    } else {
-      fill.setAttribute('d', d);
-      fill.setAttribute('fill', cfg.gradient);
-      fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
-      fill.setAttribute('stroke-width', '1.1');
-      // scale Y manteniendo centro: translate->scale->translate
-      const scaleX = 1;
-      const scaleY = cfg.mainScaleY;
-      fill.setAttribute('transform', `translate(${cx},${cy}) scale(${scaleX},${scaleY}) translate(${-cx},${-cy})`);
-    }
+    // Halo: larger + svg filter for blur (preferred)
+    halo.setAttribute('fill', cfg.gradient);
+    halo.setAttribute('opacity', '0.92');
+    halo.setAttribute('filter', 'url(#haloBlur)');
+    halo.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
 
-    if (!outline) {
-      console.warn('star-outline no encontrado en estrella', i);
-    } else {
-      outline.setAttribute('d', d);
-      outline.setAttribute('fill', 'none');
-      outline.setAttribute('stroke', '#7a3e1f');
-      outline.setAttribute('stroke-width', String(cfg.outlineWidth || 8));
-      outline.setAttribute('stroke-linejoin', 'round');
-      outline.setAttribute('transform', `translate(${cx},${cy}) scale(${cfg.haloScale}) translate(${-cx},${-cy})`);
-      outline.style.visibility = 'visible';
-    }
+    // Outline: brown stroke, slightly larger than main
+    outline.setAttribute('fill', 'none');
+    outline.setAttribute('stroke', '#7a3e1f');
+    outline.setAttribute('stroke-width', String(cfg.outlineW));
+    outline.setAttribute('stroke-linejoin', 'round');
+    outline.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
 
-    if (gloss) {
-      // valores por defecto ya en HTML; se ajustan levemente según la estrella central
-      if (i === 1) {
-        gloss.setAttribute('cx', '50');
-        gloss.setAttribute('cy', '34');
-        gloss.setAttribute('rx', '26');
-        gloss.setAttribute('ry', '12');
-        gloss.setAttribute('transform', 'rotate(-16 50 34)');
-      }
-      gloss.setAttribute('fill', 'rgba(255,255,255,0.96)');
-      gloss.setAttribute('opacity', '0.95');
+    // Fill: main body, scale Y for "gordito"
+    fill.setAttribute('fill', cfg.gradient);
+    fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
+    fill.setAttribute('stroke-width', '1.1');
+    fill.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
+
+    // Rim: subtle inner light stroke (slightly smaller)
+    rim.setAttribute('fill', 'none');
+    rim.setAttribute('stroke', 'rgba(255,255,255,0.18)');
+    rim.setAttribute('stroke-width', '6');
+    rim.setAttribute('stroke-linejoin', 'round');
+    rim.setAttribute('transform', `translate(${cx} ${cy}) scale(0.96) translate(${-cx} ${-cy})`);
+
+    // Gloss: keep ellipse on top
+    gloss.setAttribute('fill', 'rgba(255,255,255,0.95)');
+    gloss.setAttribute('opacity', '0.95');
+    if (i === 1) {
+      gloss.setAttribute('cx', '50');
+      gloss.setAttribute('cy', '34');
+      gloss.setAttribute('rx', '26');
+      gloss.setAttribute('ry', '12');
+      gloss.setAttribute('transform', 'rotate(-16 50 34)');
+    } else {
+      // ensure transform attribute present for consistency
+      const cxg = gloss.getAttribute('cx') || '46';
+      const cyg = gloss.getAttribute('cy') || '34';
+      // keep existing values
     }
   });
 }
 
-/* ---------- UI logic (stars, landing, click, prizes, confetti, sky) ---------- */
+/* ---------------------------
+   UI + interaction logic
+   --------------------------- */
 
-const prizes = [
-  { label: "100% de bono + 1000 fichas", weight: 1 },
-  { label: "150% de bono + 1500 fichas", weight: 1 },
-  { label: "200% de bono + 2000 fichas", weight: 1 }
-];
+// We'll call setupStars on DOMContentLoaded, then initialize interactions
+document.addEventListener('DOMContentLoaded', () => {
+  setupStars();
 
-const starButtons = Array.from(document.querySelectorAll('.star'));
-const modal = document.getElementById('result');
-const prizeText = document.getElementById('prize-text');
-const closeBtn = document.getElementById('close-btn');
-const confettiContainer = document.getElementById('confetti');
+  // Re-query star buttons after setup
+  const starButtonsLocal = Array.from(document.querySelectorAll('.star'));
 
-let locked = true;
+  // initialize sparkles for each star
+  starButtonsLocal.forEach(btn => initSparksFor(btn));
 
+  // click handlers (enable after landing)
+  starButtonsLocal.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (locked) return;
+      locked = true;
+      starButtonsLocal.forEach(s => s.classList.remove('selected','pop','flip'));
+      btn.classList.add('selected');
+      void btn.offsetWidth;
+      btn.classList.add('pop','flip');
+      await wait(760);
+      const prize = weightedRandom(prizes);
+      showPrize(prize);
+    });
+  });
+
+  // close button handler (modal)
+  const closeBtnLocal = document.getElementById('close-btn');
+  if (closeBtnLocal) {
+    closeBtnLocal.addEventListener('click', () => {
+      hidePrize();
+      starButtonsLocal.forEach(s => s.classList.remove('selected','pop','flip'));
+      locked = false;
+    });
+  }
+});
+
+/* keep existing prize/confetti/canvas code below (unchanged) */
+
+// Weighted random helper (unchanged)
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
   let r = Math.random() * total;
@@ -130,45 +171,29 @@ function weightedRandom(arr) {
 }
 
 function showPrize(prize) {
-  prizeText.textContent = prize.label;
-  modal.classList.remove('hidden');
-  modal.classList.add('show');
+  const prizeText = document.getElementById('prize-text');
+  const modal = document.getElementById('result');
+  if (prizeText) prizeText.textContent = prize.label;
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+  }
   explodeConfetti();
 }
 function hidePrize() {
-  modal.classList.remove('show');
-  setTimeout(()=> modal.classList.add('hidden'), 260);
-  confettiContainer.innerHTML = '';
+  const modal = document.getElementById('result');
+  if (modal) modal.classList.remove('show');
+  setTimeout(()=> {
+    if (modal) modal.classList.add('hidden');
+  }, 260);
+  const confettiContainer = document.getElementById('confetti');
+  if (confettiContainer) confettiContainer.innerHTML = '';
 }
 
-/* sparkles per star */
-starButtons.forEach((btn) => initSparksFor(btn));
-
-/* click handlers */
-starButtons.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    if (locked) return;
-    locked = true;
-    starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
-    btn.classList.add('selected');
-    void btn.offsetWidth;
-    btn.classList.add('pop','flip');
-    await wait(760);
-    const prize = weightedRandom(prizes);
-    showPrize(prize);
-  });
-});
-
-closeBtn.addEventListener('click', () => {
-  hidePrize();
-  starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
-  locked = false;
-});
-
-function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
-
-/* confetti */
+/* confetti (unchanged) */
 function explodeConfetti() {
+  const confettiContainer = document.getElementById('confetti');
+  if (!confettiContainer) return;
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
   const count = 28;
@@ -192,13 +217,14 @@ function explodeConfetti() {
   }
 }
 
-/* Canvas sky (twinkle) */
+/* Canvas sky (twinkle) - unchanged from your version */
 const canvas = document.getElementById('sky');
-const ctx = canvas.getContext('2d');
-let stars = [], W=0, H=0;
-const DPR = Math.max(1, devicePixelRatio || 1);
+const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+let skyStars = [], W=0, H=0;
+const DPR = Math.max(1, window.devicePixelRatio || 1);
 
 function resize() {
+  if (!canvas || !ctx) return;
   W = canvas.width = Math.floor(window.innerWidth * DPR);
   H = canvas.height = Math.floor(window.innerHeight * DPR);
   canvas.style.width = window.innerWidth + 'px';
@@ -208,7 +234,7 @@ function resize() {
 window.addEventListener('resize', resize);
 
 function initStars() {
-  stars = [];
+  skyStars = [];
   const area = window.innerWidth * window.innerHeight;
   const count = Math.max(60, Math.floor(area / 16000));
   for (let i=0;i<count;i++){
@@ -220,23 +246,26 @@ function initStars() {
     const amp = Math.random() * 0.22 + 0.06;
     const phase = Math.random() * Math.PI * 2;
     const hasSpark = Math.random() < 0.12;
-    stars.push({x,y,r,baseA,speed,amp,phase,hasSpark,sparkTimer:0});
+    skyStars.push({x,y,r,baseA,speed,amp,phase,hasSpark,sparkTimer:0});
   }
 }
 
 let last = performance.now();
 function draw(now){
+  if (!ctx) return;
   const dt = (now - last) / 1000;
   last = now;
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0, '#04101d'); g.addColorStop(0.5, '#07162a'); g.addColorStop(1, '#071a2d');
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
   const vign = ctx.createRadialGradient(W/2, H*0.36, Math.min(W,H)*0.18, W/2, H/2, Math.max(W,H));
   vign.addColorStop(0,'rgba(20,30,50,0.02)'); vign.addColorStop(1,'rgba(0,0,0,0.28)');
   ctx.fillStyle = vign; ctx.fillRect(0,0,W,H);
+
   ctx.globalCompositeOperation = 'screen';
-  for (let i=0;i<stars.length;i++){
-    const s = stars[i];
+  for (let i=0;i<skyStars.length;i++){
+    const s = skyStars[i];
     s.phase += dt * s.speed;
     let tw = s.baseA * (1 + Math.sin(s.phase) * s.amp);
     if (s.hasSpark && Math.random() < 0.006) { s.sparkTimer = 0.12 + Math.random() * 0.34; }
@@ -256,10 +285,12 @@ function draw(now){
   requestAnimationFrame(draw);
 }
 
-resize(); requestAnimationFrame(draw);
+resize();
+requestAnimationFrame(draw);
 
-/* sparks */
+/* sparks (per star DOM element) */
 function initSparksFor(starEl){
+  if (!starEl) return;
   const count = 3 + Math.floor(Math.random()*3);
   for (let i=0;i<count;i++){
     const sp = document.createElement('span');
@@ -269,19 +300,24 @@ function initSparksFor(starEl){
     const size = 3 + Math.random()*8;
     const dur = (0.9 + Math.random()*1.6).toFixed(2) + 's';
     const delay = (Math.random()*1.8).toFixed(2) + 's';
-    sp.style.left = lx + '%'; sp.style.top = ty + '%';
-    sp.style.width = size + 'px'; sp.style.height = size + 'px';
-    sp.style.setProperty('--dur', dur); sp.style.setProperty('--delay', delay);
+    sp.style.left = lx + '%';
+    sp.style.top = ty + '%';
+    sp.style.width = size + 'px';
+    sp.style.height = size + 'px';
+    sp.style.setProperty('--dur', dur);
+    sp.style.setProperty('--delay', delay);
     starEl.appendChild(sp);
   }
 }
 
-/* landing */
+/* landing: remove dropping and enable clicks after animations */
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.body.classList.remove('dropping');
+    // small buffer for transitions
     setTimeout(() => { locked = false; }, 600);
   }, 60);
 });
 
+/* prevent text selection while interacting */
 document.addEventListener('selectstart', e => e.preventDefault());
