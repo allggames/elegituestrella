@@ -1,183 +1,138 @@
 :root{
-  --bg1: #fff7d9;
-  --bg2: #ffe98a;
-  --bg3: #ffd04a;
-  --accent: #ffb84d;
-  --text: #1b2330;
+  --accent: #ffbf4d;
+  --modal-bg: #ffffff;
+  --text: #f6f7fb;
+  --shadow: rgba(0,0,0,0.28);
 }
 
+/* Página en pantalla completa */
 *{box-sizing:border-box}
+html,body{height:100%; margin:0; padding:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+
 body{
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  margin:0;
-  padding:2rem;
-  min-height:100vh;
+  overflow:hidden; /* fondo canvas controla el scroll */
+  background: linear-gradient(180deg, #071029 0%, #081527 40%, #0b1a3a 100%); /* fallback si canvas falla */
   color:var(--text);
-  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
 }
 
-main{
+/* canvas ocupa todo el fondo */
+#sky{
+  position:fixed;
+  inset:0;
   width:100%;
-  max-width:980px;
-  text-align:center;
-  padding-bottom:2rem;
+  height:100%;
+  z-index:0;
+  display:block;
 }
 
-h1{
-  margin:0 0 1.25rem;
-  font-size:1.6rem;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+/* Contenido centrado vertical/horizontal */
+main{
+  position:relative;
+  z-index:2;
+  width:100%;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none; /* evitamos clicks fuera de botones */
 }
 
-/* Contenedor 3D */
+/* estrellas en centro (y permiten interacción) */
 .stars{
   display:flex;
-  gap:1.6rem;
+  gap:2.2rem;
+  align-items:flex-end;
   justify-content:center;
-  align-items:end;
-  margin-bottom:1.6rem;
-  perspective: 1000px; /* para 3D flip */
+  perspective:1100px;
+  pointer-events:auto;
 }
 
-/* Aumenté tamaños para que sean más grandes */
+/* botón estrella */
 .star{
   background:transparent;
   border:0;
   padding:0;
-  cursor:pointer;
-  width:170px;   /* más ancha */
-  height:200px;  /* más alta para reflejo */
+  width:220px;
+  height:250px;
   display:flex;
   align-items:flex-end;
   justify-content:center;
   position:relative;
   transform-origin:center bottom;
+  cursor:pointer;
   outline:none;
-  transition: transform .14s ease;
+  pointer-events:auto;
 }
-.star:nth-child(1){ transform: translateY(12px) scale(0.96); }
-.star:nth-child(2){ transform: translateY(0) scale(1.2); } /* central más grande */
-.star:nth-child(3){ transform: translateY(12px) scale(0.96); }
+.star:nth-child(1){ transform: translateY(18px) scale(0.95); }
+.star:nth-child(2){ transform: translateY(0) scale(1.18); }
+.star:nth-child(3){ transform: translateY(18px) scale(0.95); }
 
-/* inner wrapper that flips */
+/* wrapper que gira (3D) */
 .star-inner{
   width:100%;
   height:100%;
-  transform-style: preserve-3d;
-  transition: transform 0.82s cubic-bezier(.2,.9,.25,1);
+  transform-style:preserve-3d;
+  transition: transform 0.85s cubic-bezier(.2,.9,.25,1);
   display:flex;
   align-items:flex-end;
   justify-content:center;
   position:relative;
-  pointer-events:none; /* evitamos doble trigger sobre inner */
 }
 
-/* flip class on button flips the inner (3D) */
-.star.flip .star-inner{
-  transform: rotateY(180deg);
-}
+/* flip 3D al añadir clase .flip */
+.star.flip .star-inner{ transform: rotateY(180deg); }
 
-/* The visible star SVG (más grande y con profundidad) */
+/* SVG tamaño y profundidad */
 .star-svg{
-  width:150px;
-  height:150px;
+  width:190px;
+  height:190px;
+  transform: translateZ(36px);
   display:block;
-  transform: translateZ(26px);
-  filter: drop-shadow(0 22px 26px rgba(0,0,0,0.12));
   border-radius:12px;
+  filter: drop-shadow(0 28px 34px rgba(0,0,0,0.2));
 }
 
-/* Hacemos la forma un poco "gordita" mediante escala leve en el polygon */
-.star-shape{
-  transform-origin:50% 50%;
-  transform: scale(1.06, 1.12); /* más ancha/llenita */
-  transition: transform .28s ease, filter .2s;
-}
+/* hacer la forma un poco "gordita" con escala */
+.star-path{ transform-origin:50% 50%; transform: scale(1.06,1.14); transition: transform .28s ease; }
 
-/* reflection SVG (mirrored) */
+/* reflection (invertida, desenfocada y enmascarada) */
 .star-reflection{
-  width:150px;
-  height:150px;
-  display:block;
+  width:190px;
+  height:190px;
   position:absolute;
   left:50%;
-  transform: translateX(-50%) scaleY(-1) translateY(52px) scale(0.98);
+  transform: translateX(-50%) scaleY(-1) translateY(74px) scale(0.98);
   opacity:0.78;
-  filter: blur(5px) saturate(1.04);
+  filter: blur(4px) saturate(.98);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0));
   mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0));
   pointer-events:none;
 }
 
-/* cuando esté "selected" le damos un pop y leve rotación */
-.star.selected .star-svg{ transform: translateZ(36px) scale(1.06) rotate(-4deg); filter: drop-shadow(0 32px 34px rgba(255,160,0,0.16)); }
-
-/* animación pop */
-.star.pop .star-svg{
-  animation: pop .56s cubic-bezier(.2,.9,.2,1);
-}
+/* estilo al seleccionado (pop) */
+.star.selected .star-svg{ transform: translateZ(46px) scale(1.06) rotate(-4deg); filter: drop-shadow(0 40px 44px rgba(0,0,0,0.22)); }
+.star.pop .star-svg{ animation: pop .56s cubic-bezier(.2,.9,.2,1); }
 @keyframes pop {
-  0%{ transform: translateZ(26px) scale(1); }
-  40%{ transform: translateZ(48px) scale(1.34) rotate(6deg); }
-  100%{ transform: translateZ(36px) scale(1.06) rotate(0); }
+  0%{ transform: translateZ(36px) scale(1); }
+  40%{ transform: translateZ(62px) scale(1.36) rotate(6deg); }
+  100%{ transform: translateZ(46px) scale(1.06) rotate(0); }
 }
 
 /* Modal */
-.modal{
-  position:fixed;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  pointer-events:none;
-}
-.modal .modal-content{
-  background:white;
-  padding:1.25rem 1.5rem;
-  border-radius:12px;
-  box-shadow:0 20px 40px rgba(20,30,50,0.12);
-  min-width:300px;
-  transform: translateY(14px);
-  opacity:0;
-  transition:all .28s ease;
-  pointer-events:auto;
-}
-.modal.show .modal-content{
-  transform: translateY(0);
-  opacity:1;
-}
+.modal{ position:fixed; inset:0; display:flex; justify-content:center; align-items:center; pointer-events:none; z-index:6; }
+.modal .modal-content{ background:var(--modal-bg); padding:1.25rem 1.4rem; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.36); min-width:300px; transform: translateY(14px); opacity:0; transition:all .22s ease; pointer-events:auto; color:#102029; }
+.modal.show .modal-content{ transform: translateY(0); opacity:1; }
 .hidden{ display:none !important; }
 
-/* confetti container */
-#confetti{
-  position:fixed;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  overflow:hidden;
-}
+/* confetti container sobre todo */
+#confetti{ position:fixed; inset:0; z-index:5; pointer-events:none; }
 
-/* botón modal */
-#close-btn{
-  margin-top:0.75rem;
-  padding:0.5rem 0.95rem;
-  background:var(--accent);
-  border:0;
-  color:white;
-  border-radius:8px;
-  cursor:pointer;
-}
+/* pequeño acceso visual oculto para el H1 */
+.visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
 
 /* responsive */
-@media (max-width:520px){
-  .stars{ gap:0.9rem; }
-  .star{ width:120px; height:150px; }
-  .star-svg, .star-reflection{ width:110px; height:110px; transform: translateZ(20px); }
-  .star-shape{ transform: scale(1.04, 1.08); }
-  .star-reflection{ transform: translateX(-50%) scaleY(-1) translateY(40px) scale(0.98); opacity:0.72; filter: blur(4px); }
+@media (max-width:600px){
+  .star{ width:140px; height:170px; }
+  .star-svg,.star-reflection{ width:120px; height:120px; transform: translateZ(24px); }
+  .star-reflection{ transform: translateX(-50%) scaleY(-1) translateY(46px) scale(0.98); opacity:0.72; filter: blur(3px); }
 }
