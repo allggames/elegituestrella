@@ -1,6 +1,8 @@
-// script.js (editado)
+// script.js
 // Versión limpia y simple: cada estrella recibe sus propios paths (halo, body, rim) y un óvalo blanco
 // detrás (white-halo) — todo alineado. Mantiene flip, pop, modal de premio, confetti, sparkles y canvas sky.
+// He agregado SOLO lo necesario para: asignar premios aleatoriamente a cada estrella (persistente por día)
+// y bloquear la selección una vez elegida hasta el día siguiente (persistencia en localStorage).
 
 (function () {
   'use strict';
@@ -25,60 +27,139 @@
   }
 
   /* ---------- Setup: asigna d y transforms a cada SVG de estrella ---------- */
- // Reemplaza la función setupStars() actual por esta en script.js
-function setupStars() {
-  const starEls = Array.from(document.querySelectorAll('.star'));
-  if (!starEls.length) return;
+  // Reemplaza la función setupStars() actual por esta en script.js
+  function setupStars() {
+    const starEls = Array.from(document.querySelectorAll('.star'));
+    if (!starEls.length) return;
 
-  // Base geométrica (si quieres cambiar tamaño base, modifica outer/inner)
-  const cx = 60, cy = 60;
-  const outer = 46, inner = 20;
-  const d = makeStarPath(cx, cy, 5, outer, inner);
+    // Base geométrica (si quieres cambiar tamaño base, modifica outer/inner)
+    const cx = 60, cy = 60;
+    const outer = 46, inner = 20;
+    const d = makeStarPath(cx, cy, 5, outer, inner);
 
-  starEls.forEach((btn, i) => {
-    const svg = btn.querySelector('.star-svg');
-    if (!svg) return;
+    starEls.forEach((btn, i) => {
+      const svg = btn.querySelector('.star-svg');
+      if (!svg) return;
 
-    // Elementos dentro del SVG (debes tenerlos en tu HTML: .halo, .body, .rim, .white-halo)
-    const halo = svg.querySelector('.halo');       // path usado como halo/difuso
-    const body = svg.querySelector('.body');       // path principal (amarillo)
-    const rim = svg.querySelector('.rim');         // rim / sub-outline
-    const white = svg.querySelector('.white-halo'); // ellipse blanco detrás
+      // Elementos dentro del SVG (debes tenerlos en tu HTML: .halo, .body, .rim, .white-halo)
+      const halo = svg.querySelector('.halo');       // path usado como halo/difuso
+      const body = svg.querySelector('.body');       // path principal (amarillo)
+      const rim = svg.querySelector('.rim');         // rim / sub-outline
+      const white = svg.querySelector('.white-halo'); // ellipse blanco detrás
 
-    // Asignamos la misma geometría a cada path
-    if (halo) halo.setAttribute('d', d);
-    if (body) body.setAttribute('d', d);
-    if (rim)  rim.setAttribute('d', d);
+      // Asignamos la misma geometría a cada path
+      if (halo) halo.setAttribute('d', d);
+      if (body) body.setAttribute('d', d);
+      if (rim)  rim.setAttribute('d', d);
 
-    // Aquí aplicamos EXACTAMENTE las transformaciones que escribiste en la consola:
-    if (i === 0 || i === 2) {
-      // estrellas laterales (pequeñas)
-      // body = scale(1.5, 1.5)
-      if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5 1.5) translate(${-cx} ${-cy})`);
-      // rim (la "estrella más chica del centro de los costados") -> la dejás en scale(1)
-      if (rim)  rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1 1) translate(${-cx} ${-cy})`);
-      // halo ligeramente más grande (opcional). Mantengo coherencia:
-      if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5) translate(${-cx} ${-cy})`);
-    } else if (i === 1) {
-      // estrella central (grande)
-      if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.80 1.80) translate(${-cx} ${-cy})`);
-      // dentro de la estrella central, el "pequeño centro" que pediste lo interpreto como rim/inner:
-      if (rim) rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1.2 1.2) translate(${-cx} ${-cy})`);
-      // halo central más grande
-      if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.8) translate(${-cx} ${-cy})`);
+      // Aquí aplicamos EXACTAMENTE las transformaciones que escribiste en la consola:
+      if (i === 0 || i === 2) {
+        // estrellas laterales (pequeñas)
+        // body = scale(1.5, 1.5)
+        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5 1.5) translate(${-cx} ${-cy})`);
+        // rim (la "estrella más chica del centro de los costados") -> la dejás en scale(1)
+        if (rim)  rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1 1) translate(${-cx} ${-cy})`);
+        // halo ligeramente más grande (opcional). Mantengo coherencia:
+        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5) translate(${-cx} ${-cy})`);
+      } else if (i === 1) {
+        // estrella central (grande)
+        if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.80 1.80) translate(${-cx} ${-cy})`);
+        // dentro de la estrella central, el "pequeño centro" que pediste lo interpreto como rim/inner:
+        if (rim) rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1.2 1.2) translate(${-cx} ${-cy})`);
+        // halo central más grande
+        if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.8) translate(${-cx} ${-cy})`);
+      }
+
+      // White halo (óvalo blanco) atrás con cx=60,cy=60,rx=60,ry=60 (tú pediste 60 para cada)
+      if (white) {
+        white.setAttribute('cx', '60');
+        white.setAttribute('cy', '60');
+        white.setAttribute('rx', '60');
+        white.setAttribute('ry', '60');
+        white.setAttribute('opacity', '0.12');    // ajusta opacidad si hace falta
+        white.style.filter = 'blur(6px)';         // efecto blur para que quede "halo"
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  ADICIONES para: asignación aleatoria de premios y bloqueo por día  */
+  /* ------------------------------------------------------------------ */
+
+  // storage keys
+  const ASSIGN_KEY = 'stars.assignments';
+  const SELECT_KEY = 'stars.selection';
+
+  // helper: today's date key YYYY-MM-DD
+  function todayKey() {
+    return new Date().toISOString().slice(0,10);
+  }
+
+  // sample weighted without replacement (simple)
+  function sampleWeightedNoReplace(sourceArr, k) {
+    const pool = sourceArr.map(x => ({...x}));
+    const out = [];
+    for (let i=0;i<k;i++){
+      const total = pool.reduce((s,x)=>s+(x.weight||1),0);
+      let r = Math.random()*total;
+      for (let j=0;j<pool.length;j++){
+        r -= (pool[j].weight||1);
+        if (r <= 0){
+          out.push(pool.splice(j,1)[0]);
+          break;
+        }
+      }
+      if (pool.length === 0 && out.length < k) break;
     }
+    return out;
+  }
 
-    // White halo (óvalo blanco) atrás con cx=60,cy=60,rx=60,ry=60 (tú pediste 60 para cada)
-    if (white) {
-      white.setAttribute('cx', '60');
-      white.setAttribute('cy', '60');
-      white.setAttribute('rx', '60');
-      white.setAttribute('ry', '60');
-      white.setAttribute('opacity', '0.12');    // ajusta opacidad si hace falta
-      white.style.filter = 'blur(6px)';         // efecto blur para que quede "halo"
-    }
-  });
-}
+  // create or load today's assignments
+  function loadOrCreateAssignments(count) {
+    try {
+      const raw = localStorage.getItem(ASSIGN_KEY);
+      const today = todayKey();
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.date === today && Array.isArray(parsed.assignments) && parsed.assignments.length === count) {
+          return parsed.assignments;
+        }
+      }
+    } catch(e){}
+    // create new
+    // NOTE: 'prizes' array exists later in script; we'll use it via closure (it's defined below). To avoid hoisting issues,
+    // if prizes isn't defined yet we fallback to a simple labels set.
+    const pool = (typeof prizes !== 'undefined' && Array.isArray(prizes) && prizes.length>0) ? prizes : [{label:'100%'},{label:'150%'},{label:'200%'}];
+    const assigned = sampleWeightedNoReplace(pool, count);
+    const payload = { date: todayKey(), assignments: assigned };
+    localStorage.setItem(ASSIGN_KEY, JSON.stringify(payload));
+    return assigned;
+  }
+
+  function loadSelection() {
+    try {
+      const raw = localStorage.getItem(SELECT_KEY);
+      const today = todayKey();
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.date === today) return parsed; // {date,index,prize}
+      }
+    } catch(e){}
+    return null;
+  }
+
+  function saveSelection(index, prize) {
+    const payload = { date: todayKey(), index, prize };
+    localStorage.setItem(SELECT_KEY, JSON.stringify(payload));
+  }
+
+  function disableAllStars() {
+    document.querySelectorAll('.star').forEach(btn=>{
+      btn.setAttribute('aria-disabled','true');
+      btn.classList.add('disabled');
+      btn.style.pointerEvents = 'none';
+    });
+  }
 
   /* ---------- UI & interactions (flip, prize, confetti) ---------- */
   const prizes = [
@@ -123,11 +204,30 @@ function setupStars() {
     const starButtons = Array.from(document.querySelectorAll('.star'));
     const closeBtn = document.getElementById('close-btn');
 
-    // sparkles por estrella
+    // Initialize sparkles for each star
     starButtons.forEach(btn => initSparksFor(btn));
 
+    // --- NEW: load/create assignments and attach to buttons ---
+    const assignments = loadOrCreateAssignments(starButtons.length);
+    starButtons.forEach((btn, idx) => {
+      const prize = assignments[idx] || { label: 'Sin premio' };
+      btn.dataset.assignedPrize = JSON.stringify(prize);
+    });
+
+    // --- NEW: check if user already selected today ---
+    const existing = loadSelection();
+    if (existing) {
+      // lock UI and mark chosen star
+      locked = true;
+      disableAllStars();
+      const chosenBtn = starButtons[existing.index];
+      if (chosenBtn) chosenBtn.classList.add('selected');
+      // optionally show modal for previous selection:
+      // showPrize(existing.prize);
+    }
+
     // click handlers (flip + pop + prize)
-    starButtons.forEach(btn => {
+    starButtons.forEach((btn, idx) => {
       btn.addEventListener('click', async () => {
         if (locked) return;
         locked = true;
@@ -135,24 +235,34 @@ function setupStars() {
         btn.classList.add('selected');
         void btn.offsetWidth; // reflow
         btn.classList.add('pop','flip');
+
+        // Use the assigned prize (persisted per day)
+        let prize;
+        try { prize = JSON.parse(btn.dataset.assignedPrize); } catch(e) { prize = weightedRandom(prizes); }
+
         await wait(760);
-        const prize = weightedRandom(prizes);
         showPrize(prize);
+
+        // persist selection for today and disable further choices
+        saveSelection(idx, prize);
+        disableAllStars();
       });
     });
 
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
         hidePrize();
-        starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
-        locked = false;
+        // keep UI locked until next day (per requirement)
       });
     }
 
-    // landing animation: quitar clase dropping y desbloquear después
+    // landing animation: quitar clase dropping y desbloquear después if not already selected
     setTimeout(() => {
       document.body.classList.remove('dropping');
-      setTimeout(() => { locked = false; }, 600);
+      // unlock only if there's no persisted selection
+      if (!loadSelection()) {
+        setTimeout(() => { locked = false; }, 600);
+      }
     }, 60);
   });
 
