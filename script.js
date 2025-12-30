@@ -11,7 +11,7 @@ const prizeText = document.getElementById('prize-text');
 const closeBtn = document.getElementById('close-btn');
 const confettiContainer = document.getElementById('confetti');
 
-let locked = false;
+let locked = true; // bloqueado hasta que termine la caída inicial
 
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
@@ -36,10 +36,13 @@ function hidePrize() {
   confettiContainer.innerHTML = '';
 }
 
-starButtons.forEach((btn, idx) => {
-  // inicializamos pequeños "sparkles" con posiciones/delays aleatorios
+/* Inicializar sparkles por estrella */
+starButtons.forEach((btn) => {
   initSparksFor(btn);
+});
 
+/* Click handlers (no se activan hasta que landingDone true) */
+starButtons.forEach((btn) => {
   btn.addEventListener('click', async (e) => {
     if (locked) return;
     locked = true;
@@ -54,14 +57,13 @@ starButtons.forEach((btn, idx) => {
     // Flip 3D
     btn.classList.add('flip');
 
-    // Esperar rotación (coincide con CSS)
+    // esperar rotación
     await wait(820);
 
-    // Elegir premio
+    // elegir premio
     const prize = weightedRandom(prizes);
-
-    // Mostrar modal
     showPrize(prize);
+    // se desbloqueará al cerrar modal
   });
 });
 
@@ -73,7 +75,7 @@ closeBtn.addEventListener('click', () => {
 
 function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 
-/* Confetti (igual que antes) */
+/* Confetti simple */
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
@@ -185,6 +187,24 @@ resize();
 requestAnimationFrame(draw);
 
 /* ---------------------------
+   Animación de caída inicial (stagger) y habilitar clicks después
+   --------------------------- */
+window.addEventListener('load', () => {
+  // Duración y offsets ajustables
+  const totalDuration = 1100; // ms for transition (matches CSS)
+  // After small extra time to allow transition-delay to finish:
+  const waitFor = totalDuration + 420;
+
+  // Remove body.dropping after waitFor to allow CSS transition from translateY(-120vh) -> final transforms
+  // We keep body.dropping initially (in HTML). Removing it makes .final-* transforms apply and animate.
+  setTimeout(() => {
+    document.body.classList.remove('dropping');
+    // after landing, allow clicks
+    setTimeout(() => { locked = false; }, 360 + 250); // small extra buffer
+  }, 60); // small timeout to ensure CSS applied; we use transition delays on final-* to stagger
+});
+
+/* ---------------------------
    Spark initialiser: create small sparkle spans per star with random pos/delay
    --------------------------- */
 function initSparksFor(starEl){
@@ -194,11 +214,11 @@ function initSparksFor(starEl){
     const sp = document.createElement('span');
     sp.className = 'spark';
     // random position across star area, bias toward top/around star
-    const lx = 30 + Math.random()*40; // percent
-    const ty = 18 + Math.random()*38;
+    const lx = 28 + Math.random()*44; // percent
+    const ty = 18 + Math.random()*40;
     const size = 4 + Math.random()*8;
-    const dur = (0.9 + Math.random()*1.4).toFixed(2) + 's';
-    const delay = (Math.random()*1.6).toFixed(2) + 's';
+    const dur = (0.9 + Math.random()*1.6).toFixed(2) + 's';
+    const delay = (Math.random()*1.8).toFixed(2) + 's';
     sp.style.left = lx + '%';
     sp.style.top = ty + '%';
     sp.style.width = size + 'px';
