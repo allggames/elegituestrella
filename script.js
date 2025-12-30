@@ -1,37 +1,35 @@
-// Genera la forma de estrella 5 puntas y la coloca en #starPath
+// Create classic 5-point star path and set #starPath d attribute
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
-  let rot = Math.PI / 2 * 3; // start at top
-  let step = Math.PI / spikes;
-  let path = '';
-  let x = cx;
-  let y = cy - outerR;
-  path += `M ${x} ${y} `;
+  let rot = -Math.PI / 2; // start at top
+  const step = Math.PI / spikes;
+  let d = '';
   for (let i = 0; i < spikes; i++) {
-    x = cx + Math.cos(rot) * outerR;
-    y = cy + Math.sin(rot) * outerR;
-    path += `L ${x} ${y} `;
+    const xOuter = cx + Math.cos(rot) * outerR;
+    const yOuter = cy + Math.sin(rot) * outerR;
+    if (i === 0) d += `M ${xOuter} ${yOuter} `;
+    else d += `L ${xOuter} ${yOuter} `;
     rot += step;
-
-    x = cx + Math.cos(rot) * innerR;
-    y = cy + Math.sin(rot) * innerR;
-    path += `L ${x} ${y} `;
+    const xInner = cx + Math.cos(rot) * innerR;
+    const yInner = cy + Math.sin(rot) * innerR;
+    d += `L ${xInner} ${yInner} `;
     rot += step;
   }
-  path += 'Z';
-  return path;
-}
-
-// set path on load (before stars rendered)
-(function setupStarPath(){
-  const cx = 60, cy = 60;
-  const outer = 46; // outer radius (bigger = fuller points)
-  const inner = 22; // inner radius (smaller = sharper points)
-  const d = makeStarPath(cx, cy, 5, outer, inner);
+  d += 'Z';
   const p = document.getElementById('starPath');
   if (p) p.setAttribute('d', d);
+}
+
+// set path before anything else renders
+(function initPath() {
+  // tuned radii for a nice "gordita" star
+  const cx = 60, cy = 60;
+  const outer = 46; // outer radius
+  const inner = 20; // inner radius (smaller = sharper points)
+  makeStarPath(cx, cy, 5, outer, inner);
 })();
 
-// ------------------- rest of script (unchanged from previous) -------------------
+/* ---------- UI logic (stars, landing, click, prizes, confetti, sky) ---------- */
+
 const prizes = [
   { label: "100% de bono + 1000 fichas", weight: 1 },
   { label: "150% de bono + 1500 fichas", weight: 1 },
@@ -44,7 +42,7 @@ const prizeText = document.getElementById('prize-text');
 const closeBtn = document.getElementById('close-btn');
 const confettiContainer = document.getElementById('confetti');
 
-let locked = true; // bloqueado hasta que terminen de caer
+let locked = true;
 
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
@@ -68,7 +66,7 @@ function hidePrize() {
   confettiContainer.innerHTML = '';
 }
 
-/* inicializa sparkles por estrella */
+/* sparkles per star */
 starButtons.forEach((btn) => initSparksFor(btn));
 
 /* click handlers */
@@ -98,7 +96,7 @@ function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
-  const count = 26;
+  const count = 28;
   for (let i=0;i<count;i++){
     const el = document.createElement('div');
     el.style.position = 'absolute';
@@ -109,6 +107,7 @@ function explodeConfetti() {
     el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     confettiContainer.appendChild(el);
+
     const duration = 1100 + Math.random()*1400;
     el.animate([
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
@@ -184,7 +183,7 @@ function draw(now){
 
 resize(); requestAnimationFrame(draw);
 
-/* sparks per star */
+/* sparks */
 function initSparksFor(starEl){
   const count = 3 + Math.floor(Math.random()*3);
   for (let i=0;i<count;i++){
