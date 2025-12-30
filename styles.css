@@ -10,7 +10,7 @@
 html,body{height:100%; margin:0; padding:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
 
 body{
-  overflow:hidden; /* fondo canvas controla el scroll */
+  overflow:hidden;
   background: linear-gradient(180deg, #071029 0%, #081527 40%, #0b1a3a 100%); /* fallback si canvas falla */
   color:var(--text);
 }
@@ -34,7 +34,7 @@ main{
   display:flex;
   align-items:center;
   justify-content:center;
-  pointer-events:none; /* evitamos clicks fuera de botones */
+  pointer-events:none;
 }
 
 /* estrellas en centro (y permiten interacción) */
@@ -104,8 +104,9 @@ main{
   transform: translateX(-50%) scaleY(-1) translateY(74px) scale(0.98);
   opacity:0.78;
   filter: blur(4px) saturate(.98);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0));
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0));
+  /* usamos mask para fade en vez de <rect> dentro del SVG */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.62), rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.62), rgba(0,0,0,0));
   pointer-events:none;
 }
 
