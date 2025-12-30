@@ -110,6 +110,27 @@ main{
   vector-effect:non-scaling-stroke;
 }
 
+/* classes for SVG parts
+   Note: prefer applying SVG filter (haloBlur) in markup; CSS fallback uses blur() */
+.star-halo{
+  fill: #ffd54a;
+  opacity:0.92;
+  /* some browsers support CSS filter on SVG; prefer filter attribute with url(#haloBlur) in SVG */
+  filter: blur(10px);
+}
+.star-fill{
+  stroke: rgba(0,0,0,0.06);
+  stroke-width:1.1;
+  fill: #ffd54a;
+  transform-origin: 60px 60px;
+}
+
+/* gloss */
+.star-gloss{
+  fill: rgba(255,255,255,0.95);
+  opacity:0.95;
+}
+
 /* reflection fade via mask */
 .star-reflection{
   width:220px;
