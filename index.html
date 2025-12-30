@@ -6,15 +6,16 @@
   <title>Elige una estrella - Juego de premios</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="dropping">
   <canvas id="sky"></canvas>
 
   <main>
     <h1 class="visually-hidden">Elige una estrella</h1>
 
     <div class="stars" role="list" aria-label="Elige una estrella">
-      <button class="star" data-index="0" aria-label="Estrella izquierda" role="listitem">
+      <button class="star final-1" data-index="0" aria-label="Estrella izquierda" role="listitem">
         <div class="star-inner" aria-hidden="true">
+          <!-- SVG con halo integrado, rim y brillo -->
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
             <defs>
               <linearGradient id="gA" x1="0" x2="1">
@@ -23,43 +24,35 @@
                 <stop offset="70%" stop-color="#ffd000"/>
                 <stop offset="100%" stop-color="#ff9d00"/>
               </linearGradient>
-              <radialGradient id="rim" cx="30%" cy="28%" r="60%">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
-                <stop offset="55%" stop-color="rgba(255,255,255,0.12)"/>
+              <radialGradient id="rimA" cx="34%" cy="28%" r="62%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.98)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,0.18)"/>
                 <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               </radialGradient>
-              <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="8" result="b"/>
+              <filter id="softGlowA" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="9" result="b"/>
                 <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="innerShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feOffset dx="0" dy="2" result="o"/>
-                <feGaussianBlur in="o" stdDeviation="2" result="blur"/>
-                <feComposite in="blur" in2="SourceGraphic" operator="out" result="shadowOut"/>
-                <feMerge><feMergeNode in="shadowOut"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
             </defs>
 
-            <!-- soft background halo done as blurred path copy for tighter control -->
+            <!-- halo suave (ahora dentro del SVG para evitar recuadros) -->
             <path class="halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#gA)" opacity="0.95" transform="scale(1.14) translate(-4,-4)" filter="url(#softGlow)"/>
+              fill="url(#gA)" opacity="0.94" transform="scale(1.18) translate(-6,-6)" filter="url(#softGlowA)"/>
 
-            <!-- main star shape -->
+            <!-- estrella principal (más gordita mediante scale) -->
             <path class="star-path"
               d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
               fill="url(#gA)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" />
 
             <!-- rim highlight -->
-            <path class="rim-highlight"
-              d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
-              fill="url(#rim)" opacity="0.9" />
+            <path class="rim-highlight" d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
+              fill="url(#rimA)" opacity="0.92" />
 
-            <!-- glossy specular small -->
-            <ellipse cx="46" cy="34" rx="24" ry="10" fill="rgba(255,255,255,0.86)" transform="rotate(-20 46 34)" opacity="0.9"/>
-
+            <!-- specular gloss -->
+            <ellipse cx="44" cy="36" rx="26" ry="11" fill="rgba(255,255,255,0.95)" transform="rotate(-22 44 36)" opacity="0.95"/>
           </svg>
 
-          <!-- reflection: no rect, fade via CSS mask on container -->
+          <!-- reflection (fade vía mask CSS), sin rects -->
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
             <g style="opacity:0.78; filter: blur(4px) saturate(1.02);">
               <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
@@ -67,9 +60,12 @@
             </g>
           </svg>
         </div>
+
+        <!-- sombra debajo (simple, sin recuadro) -->
+        <div class="ground-shadow" aria-hidden="true"></div>
       </button>
 
-      <button class="star" data-index="1" aria-label="Estrella central" role="listitem">
+      <button class="star final-2" data-index="1" aria-label="Estrella central" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
             <defs>
@@ -85,23 +81,21 @@
                 <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               </radialGradient>
               <filter id="softGlowB" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="9" result="b"/>
+                <feGaussianBlur stdDeviation="10" result="b"/>
                 <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
             </defs>
 
             <path class="halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#gB)" opacity="0.96" transform="scale(1.16) translate(-5,-5)" filter="url(#softGlowB)"/>
+              fill="url(#gB)" opacity="0.96" transform="scale(1.2) translate(-7,-7)" filter="url(#softGlowB)"/>
 
             <path class="star-path"
               d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
               fill="url(#gB)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" />
 
-            <path class="rim-highlight"
-              d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
-              fill="url(#rimB)" opacity="0.95" />
-
-            <ellipse cx="48" cy="33" rx="26" ry="12" fill="rgba(255,255,255,0.96)" transform="rotate(-20 48 33)" opacity="0.95"/>
+            <path class="rim-highlight" d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
+              fill="url(#rimB)" opacity="0.96" />
+            <ellipse cx="48" cy="33" rx="28" ry="12" fill="rgba(255,255,255,0.98)" transform="rotate(-20 48 33)" opacity="0.96"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -111,9 +105,11 @@
             </g>
           </svg>
         </div>
+
+        <div class="ground-shadow" aria-hidden="true"></div>
       </button>
 
-      <button class="star" data-index="2" aria-label="Estrella derecha" role="listitem">
+      <button class="star final-3" data-index="2" aria-label="Estrella derecha" role="listitem">
         <div class="star-inner" aria-hidden="true">
           <svg viewBox="0 0 120 120" class="star-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
             <defs>
@@ -129,23 +125,21 @@
                 <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               </radialGradient>
               <filter id="softGlowC" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="8" result="b"/>
+                <feGaussianBlur stdDeviation="9" result="b"/>
                 <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
             </defs>
 
             <path class="halo" d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-              fill="url(#gC)" opacity="0.95" transform="scale(1.14) translate(-4,-4)" filter="url(#softGlowC)"/>
+              fill="url(#gC)" opacity="0.95" transform="scale(1.18) translate(-6,-6)" filter="url(#softGlowC)"/>
 
             <path class="star-path"
               d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
               fill="url(#gC)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2" />
 
-            <path class="rim-highlight"
-              d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
-              fill="url(#rimC)" opacity="0.88" />
-
-            <ellipse cx="44" cy="36" rx="20" ry="9" fill="rgba(255,255,255,0.88)" transform="rotate(-24 44 36)" opacity="0.9"/>
+            <path class="rim-highlight" d="M60 6 L74 38 L98 40 L70 64 L78 92 L60 74 L32 92 L38 64 L12 42 L46 38 Z"
+              fill="url(#rimC)" opacity="0.9" />
+            <ellipse cx="44" cy="36" rx="22" ry="10" fill="rgba(255,255,255,0.9)" transform="rotate(-24 44 36)" opacity="0.9"/>
           </svg>
 
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -155,6 +149,8 @@
             </g>
           </svg>
         </div>
+
+        <div class="ground-shadow" aria-hidden="true"></div>
       </button>
     </div>
 
