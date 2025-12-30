@@ -1,6 +1,10 @@
-// Create classic 5-point star path and set #starPath d attribute
+// script.js
+// Reemplaza el anterior: asigna la ruta de la estrella a CADA SVG (para evitar solapamientos)
+// y conserva el resto de la lógica (clicks, confetti, canvas, sparkles, landing).
+
+// Crea la ruta de una estrella de 5 puntas (string "d")
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
-  let rot = -Math.PI / 2; // start at top
+  let rot = -Math.PI / 2; // empezar arriba
   const step = Math.PI / spikes;
   let d = '';
   for (let i = 0; i < spikes; i++) {
@@ -15,18 +19,89 @@ function makeStarPath(cx, cy, spikes, outerR, innerR) {
     rot += step;
   }
   d += 'Z';
-  const p = document.getElementById('starPath');
-  if (p) p.setAttribute('d', d);
+  return d;
 }
 
-// set path before anything else renders
-(function initPath() {
-  // tuned radii for a nice "gordita" star
+// Asigna rutas/estilos por estrella (cada SVG tiene sus propios path)
+function setupStars() {
+  const starEls = Array.from(document.querySelectorAll('.star'));
+  if (!starEls.length) return;
+
+  // configuración por estrella: haloScale, scaleY para el cuerpo y el fill gradient
+  const configs = [
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineWidth: 8 },
+    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineWidth: 9 },
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineWidth: 8 }
+  ];
+
+  // parámetros geométricos (centro 60,60 de los viewBox 0..120)
   const cx = 60, cy = 60;
-  const outer = 46; // outer radius
-  const inner = 20; // inner radius (smaller = sharper points)
-  makeStarPath(cx, cy, 5, outer, inner);
-})();
+  const outer = 46;
+  const inner = 20;
+  const d = makeStarPath(cx, cy, 5, outer, inner);
+
+  starEls.forEach((btn, i) => {
+    const svg = btn.querySelector('.star-svg');
+    if (!svg) return;
+
+    const halo = svg.querySelector('.star-halo');
+    const fill = svg.querySelector('.star-fill');
+    const outline = svg.querySelector('.star-outline');
+    const gloss = svg.querySelector('.star-gloss');
+
+    const cfg = configs[i] || configs[0];
+
+    // Aseguramos que existan los elementos; si no, los creamos
+    if (!halo) {
+      console.warn('star-halo no encontrado en estrella', i);
+    } else {
+      halo.setAttribute('d', d);
+      halo.setAttribute('fill', cfg.gradient);
+      halo.setAttribute('opacity', '0.92');
+      // preferimos usar el filtro SVG compartido
+      halo.setAttribute('filter', 'url(#haloBlur)');
+      halo.setAttribute('transform', `translate(${cx},${cy}) scale(${cfg.haloScale}) translate(${-cx},${-cy})`);
+    }
+
+    if (!fill) {
+      console.warn('star-fill no encontrado en estrella', i);
+    } else {
+      fill.setAttribute('d', d);
+      fill.setAttribute('fill', cfg.gradient);
+      fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
+      fill.setAttribute('stroke-width', '1.1');
+      // scale Y manteniendo centro: translate->scale->translate
+      const scaleX = 1;
+      const scaleY = cfg.mainScaleY;
+      fill.setAttribute('transform', `translate(${cx},${cy}) scale(${scaleX},${scaleY}) translate(${-cx},${-cy})`);
+    }
+
+    if (!outline) {
+      console.warn('star-outline no encontrado en estrella', i);
+    } else {
+      outline.setAttribute('d', d);
+      outline.setAttribute('fill', 'none');
+      outline.setAttribute('stroke', '#7a3e1f');
+      outline.setAttribute('stroke-width', String(cfg.outlineWidth || 8));
+      outline.setAttribute('stroke-linejoin', 'round');
+      outline.setAttribute('transform', `translate(${cx},${cy}) scale(${cfg.haloScale}) translate(${-cx},${-cy})`);
+      outline.style.visibility = 'visible';
+    }
+
+    if (gloss) {
+      // valores por defecto ya en HTML; se ajustan levemente según la estrella central
+      if (i === 1) {
+        gloss.setAttribute('cx', '50');
+        gloss.setAttribute('cy', '34');
+        gloss.setAttribute('rx', '26');
+        gloss.setAttribute('ry', '12');
+        gloss.setAttribute('transform', 'rotate(-16 50 34)');
+      }
+      gloss.setAttribute('fill', 'rgba(255,255,255,0.96)');
+      gloss.setAttribute('opacity', '0.95');
+    }
+  });
+}
 
 /* ---------- UI logic (stars, landing, click, prizes, confetti, sky) ---------- */
 
