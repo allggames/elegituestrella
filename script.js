@@ -190,30 +190,24 @@ requestAnimationFrame(draw);
    Animación de caída inicial (stagger) y habilitar clicks después
    --------------------------- */
 window.addEventListener('load', () => {
-  // Duración y offsets ajustables
-  const totalDuration = 1100; // ms for transition (matches CSS)
-  // After small extra time to allow transition-delay to finish:
+  const totalDuration = 1100; // ms for transition
   const waitFor = totalDuration + 420;
 
-  // Remove body.dropping after waitFor to allow CSS transition from translateY(-120vh) -> final transforms
-  // We keep body.dropping initially (in HTML). Removing it makes .final-* transforms apply and animate.
+  // Small initial timeout to ensure CSS applied then remove 'dropping'
   setTimeout(() => {
     document.body.classList.remove('dropping');
-    // after landing, allow clicks
-    setTimeout(() => { locked = false; }, 360 + 250); // small extra buffer
-  }, 60); // small timeout to ensure CSS applied; we use transition delays on final-* to stagger
+    setTimeout(() => { locked = false; }, 420); // enable clicks after landing
+  }, 60);
 });
 
 /* ---------------------------
    Spark initialiser: create small sparkle spans per star with random pos/delay
    --------------------------- */
 function initSparksFor(starEl){
-  // create 3-5 sparks per star
   const count = 3 + Math.floor(Math.random()*3);
   for (let i=0;i<count;i++){
     const sp = document.createElement('span');
     sp.className = 'spark';
-    // random position across star area, bias toward top/around star
     const lx = 28 + Math.random()*44; // percent
     const ty = 18 + Math.random()*40;
     const size = 4 + Math.random()*8;
