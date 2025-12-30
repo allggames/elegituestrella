@@ -1,4 +1,37 @@
-// Premios configurables
+// Genera la forma de estrella 5 puntas y la coloca en #starPath
+function makeStarPath(cx, cy, spikes, outerR, innerR) {
+  let rot = Math.PI / 2 * 3; // start at top
+  let step = Math.PI / spikes;
+  let path = '';
+  let x = cx;
+  let y = cy - outerR;
+  path += `M ${x} ${y} `;
+  for (let i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outerR;
+    y = cy + Math.sin(rot) * outerR;
+    path += `L ${x} ${y} `;
+    rot += step;
+
+    x = cx + Math.cos(rot) * innerR;
+    y = cy + Math.sin(rot) * innerR;
+    path += `L ${x} ${y} `;
+    rot += step;
+  }
+  path += 'Z';
+  return path;
+}
+
+// set path on load (before stars rendered)
+(function setupStarPath(){
+  const cx = 60, cy = 60;
+  const outer = 46; // outer radius (bigger = fuller points)
+  const inner = 22; // inner radius (smaller = sharper points)
+  const d = makeStarPath(cx, cy, 5, outer, inner);
+  const p = document.getElementById('starPath');
+  if (p) p.setAttribute('d', d);
+})();
+
+// ------------------- rest of script (unchanged from previous) -------------------
 const prizes = [
   { label: "100% de bono + 1000 fichas", weight: 1 },
   { label: "150% de bono + 1500 fichas", weight: 1 },
