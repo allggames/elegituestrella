@@ -3,7 +3,7 @@
   --modal-bg: #ffffff;
 }
 
-/* Reset y layout */
+/* reset y layout */
 *{box-sizing:border-box}
 html,body{height:100%; margin:0; padding:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
 body{
@@ -24,8 +24,8 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
   background:transparent;
   border:0;
   padding:0;
-  width:240px;
-  height:260px;
+  width:260px;
+  height:280px;
   display:flex;
   align-items:flex-end;
   justify-content:center;
@@ -37,29 +37,25 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
   z-index:3;
 }
 
-/* estado de caída inicial: fuera de pantalla */
-.dropping .star{
-  transform: translateY(-140vh) scale(0.98);
-  transition: transform 1100ms cubic-bezier(.22,.9,.3,1);
-}
-
-/* posiciones finales (stagger por transition-delay) */
+/* caída inicial */
+.dropping .star{ transform: translateY(-140vh) scale(0.98); transition: transform 1100ms cubic-bezier(.22,.9,.3,1); }
+/* posiciones finales */
 .final-1{ transform: translateY(20px) scale(0.98); transition-delay: 220ms; }
-.final-2{ transform: translateY(0) scale(1.26);  transition-delay: 120ms; }
+.final-2{ transform: translateY(0) scale(1.28);  transition-delay: 120ms; }
 .final-3{ transform: translateY(20px) scale(0.98); transition-delay: 320ms; }
 
-/* wrapper flip */
+/* flip wrapper */
 .star-inner{ width:100%; height:100%; transform-style:preserve-3d; transition: transform 0.85s cubic-bezier(.2,.9,.25,1); display:flex; align-items:flex-end; justify-content:center; position:relative; z-index:4; }
 .star.flip .star-inner{ transform: rotateY(180deg); }
 
-/* SVG */
-.star-svg{ width:210px; height:210px; transform: translateZ(36px); display:block; border-radius:12px; z-index:5; background:transparent; overflow:visible; shape-rendering:geometricPrecision; }
-.star-svg path, .star-svg ellipse { stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+/* svg */
+.star-svg{ width:220px; height:220px; transform: translateZ(36px); display:block; border-radius:12px; z-index:5; background:transparent; overflow:visible; shape-rendering:geometricPrecision; }
+.star-svg use, .star-svg path, .star-svg ellipse { stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke; }
 
 /* reflection fade via mask */
 .star-reflection{
-  width:210px;
-  height:210px;
+  width:220px;
+  height:220px;
   position:absolute;
   left:50%;
   transform: translateX(-50%) scaleY(-1) translateY(76px) scale(0.95);
@@ -96,7 +92,7 @@ main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; alig
   100%{ transform: translateZ(56px) scale(1.04) rotate(0); }
 }
 
-/* pequeños sparkles por estrella (creados en JS) */
+/* sparkles (JS creates them) */
 .star .spark{
   position:absolute;
   width:8px;
