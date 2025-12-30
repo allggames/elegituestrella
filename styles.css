@@ -24,7 +24,7 @@ body{
 /* header (title at top, bold) */
 .page-header{
   position:fixed;
-  top:55px;
+  top:70px;
   left:50%;
   transform:translateX(-50%);
   z-index:9;
