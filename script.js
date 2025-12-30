@@ -11,9 +11,8 @@ const prizeText = document.getElementById('prize-text');
 const closeBtn = document.getElementById('close-btn');
 const confettiContainer = document.getElementById('confetti');
 
-let locked = true; // desactivado hasta que terminen las estrellas de caer
+let locked = true; // bloqueado hasta que terminen de caer
 
-// Weighted random
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
   let r = Math.random() * total;
@@ -36,27 +35,21 @@ function hidePrize() {
   confettiContainer.innerHTML = '';
 }
 
-/* Inicializa sparkles en cada estrella */
+/* inicializa sparkles por estrella */
 starButtons.forEach((btn) => initSparksFor(btn));
 
-/* Click handlers */
+/* click handlers */
 starButtons.forEach(btn => {
   btn.addEventListener('click', async () => {
     if (locked) return;
     locked = true;
-
     starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
     btn.classList.add('selected');
-
-    // pop + flip
     void btn.offsetWidth;
     btn.classList.add('pop','flip');
-
     await wait(760);
-
     const prize = weightedRandom(prizes);
     showPrize(prize);
-    // se desbloqueará al cerrar modal
   });
 });
 
@@ -68,7 +61,7 @@ closeBtn.addEventListener('click', () => {
 
 function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 
-/* Confetti (emojis) */
+/* confetti */
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
@@ -83,28 +76,19 @@ function explodeConfetti() {
     el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     confettiContainer.appendChild(el);
-
     const duration = 1100 + Math.random()*1400;
     el.animate([
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
       { transform: `translateY(${80 + Math.random()*120}vh) rotate(${Math.random()*900 - 450}deg)`, opacity: 0.2 }
-    ], {
-      duration,
-      easing: 'cubic-bezier(.2,.8,.2,1)',
-      fill: 'forwards'
-    });
-
+    ], { duration, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
     setTimeout(()=> { try { el.remove(); } catch(e){} }, duration+220);
   }
 }
 
-/* ---------------------------
-   Canvas: cielo estrellado animado (twinkle sutil)
-   --------------------------- */
+/* Canvas sky (twinkle) */
 const canvas = document.getElementById('sky');
 const ctx = canvas.getContext('2d');
-let stars = [];
-let W = 0, H = 0;
+let stars = [], W=0, H=0;
 const DPR = Math.max(1, devicePixelRatio || 1);
 
 function resize() {
@@ -114,7 +98,7 @@ function resize() {
   canvas.style.height = window.innerHeight + 'px';
   initStars();
 }
-window.addEventListener('resize', () => resize());
+window.addEventListener('resize', resize);
 
 function initStars() {
   stars = [];
@@ -137,22 +121,12 @@ let last = performance.now();
 function draw(now){
   const dt = (now - last) / 1000;
   last = now;
-
-  // fondo
   const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0, '#04101d');
-  g.addColorStop(0.5, '#07162a');
-  g.addColorStop(1, '#071a2d');
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,W,H);
-
-  // vignette
+  g.addColorStop(0, '#04101d'); g.addColorStop(0.5, '#07162a'); g.addColorStop(1, '#071a2d');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
   const vign = ctx.createRadialGradient(W/2, H*0.36, Math.min(W,H)*0.18, W/2, H/2, Math.max(W,H));
-  vign.addColorStop(0, 'rgba(20,30,50,0.02)');
-  vign.addColorStop(1, 'rgba(0,0,0,0.28)');
-  ctx.fillStyle = vign;
-  ctx.fillRect(0,0,W,H);
-
+  vign.addColorStop(0,'rgba(20,30,50,0.02)'); vign.addColorStop(1,'rgba(0,0,0,0.28)');
+  ctx.fillStyle = vign; ctx.fillRect(0,0,W,H);
   ctx.globalCompositeOperation = 'screen';
   for (let i=0;i<stars.length;i++){
     const s = stars[i];
@@ -160,7 +134,6 @@ function draw(now){
     let tw = s.baseA * (1 + Math.sin(s.phase) * s.amp);
     if (s.hasSpark && Math.random() < 0.006) { s.sparkTimer = 0.12 + Math.random() * 0.34; }
     if (s.sparkTimer > 0) { tw += 0.6 * Math.exp(-5 * (0.4 - s.sparkTimer)); s.sparkTimer -= dt; }
-
     const rad = s.r * (1 + Math.sin(s.phase) * 0.12);
     const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, rad*4.5);
     grad.addColorStop(0, `rgba(255,255,255,${Math.min(1, 0.95 * tw)})`);
@@ -169,53 +142,39 @@ function draw(now){
     grad.addColorStop(1, `rgba(0,0,0,0)`);
     ctx.fillStyle = grad;
     ctx.fillRect(s.x - rad*4.5, s.y - rad*4.5, rad*9, rad*9);
-
     ctx.fillStyle = `rgba(255,255,255,${0.35 * tw})`;
     ctx.fillRect(Math.round(s.x), Math.round(s.y), Math.max(1, DPR), Math.max(1, DPR));
   }
   ctx.globalCompositeOperation = 'source-over';
-
   requestAnimationFrame(draw);
 }
 
-resize();
-requestAnimationFrame(draw);
+resize(); requestAnimationFrame(draw);
 
-/* ---------------------------
-   Spark initializer: small spark spans per star with random pos/delay
-   --------------------------- */
+/* sparks per star */
 function initSparksFor(starEl){
   const count = 3 + Math.floor(Math.random()*3);
   for (let i=0;i<count;i++){
     const sp = document.createElement('span');
     sp.className = 'spark';
-    const lx = 24 + Math.random()*52; // percent across star box
+    const lx = 24 + Math.random()*52;
     const ty = 14 + Math.random()*46;
     const size = 3 + Math.random()*8;
     const dur = (0.9 + Math.random()*1.6).toFixed(2) + 's';
     const delay = (Math.random()*1.8).toFixed(2) + 's';
-    sp.style.left = lx + '%';
-    sp.style.top = ty + '%';
-    sp.style.width = size + 'px';
-    sp.style.height = size + 'px';
-    sp.style.setProperty('--dur', dur);
-    sp.style.setProperty('--delay', delay);
+    sp.style.left = lx + '%'; sp.style.top = ty + '%';
+    sp.style.width = size + 'px'; sp.style.height = size + 'px';
+    sp.style.setProperty('--dur', dur); sp.style.setProperty('--delay', delay);
     starEl.appendChild(sp);
   }
 }
 
-/* ---------------------------
-   Landing animation: remove body.dropping to let CSS transitions run,
-   enable clicks after landing
-   --------------------------- */
+/* landing: remove dropping and enable clicks */
 window.addEventListener('load', () => {
-  // small timeout to ensure CSS applied
   setTimeout(() => {
     document.body.classList.remove('dropping');
-    // wait a bit for transitions + stagger delays to complete
     setTimeout(() => { locked = false; }, 600);
   }, 60);
 });
 
-/* evitar selección de texto */
 document.addEventListener('selectstart', e => e.preventDefault());
