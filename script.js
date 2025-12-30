@@ -1,12 +1,9 @@
-// script.js
-// Versión corregida: asigna rutas / elementos independientes a cada SVG de estrella,
-// inicializa sparkles por estrella y conserva el resto de la lógica (clicks, confetti, canvas).
+// script.js — versión final: restaura flip, muestra premio y confetti/emojis,
+// mantiene paths independientes por estrella y evita solapamientos.
 
-/* ---------------------------
-   Geometry: crear "d" para estrella de 5 puntas
-   --------------------------- */
+// ---------- Geometry: crea "d" para estrella de 5 puntas ----------
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
-  let rot = -Math.PI / 2; // start at top
+  let rot = -Math.PI / 2;
   const step = Math.PI / spikes;
   let d = '';
   for (let i = 0; i < spikes; i++) {
@@ -23,22 +20,17 @@ function makeStarPath(cx, cy, spikes, outerR, innerR) {
   return d;
 }
 
-/* ---------------------------
-   Setup per-star SVG: halo, outline, fill, rim, gloss
-   Each star gets its own path elements (no shared <use>)
-   --------------------------- */
+// ---------- Setup: asigna rutas / elementos independientes a cada SVG ----------
 function setupStars() {
   const starEls = Array.from(document.querySelectorAll('.star'));
   if (!starEls.length) return;
 
-  // Per-star visual configs (halo scale, vertical scale for "gordito", gradient id, outline width)
   const configs = [
     { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 8 },
     { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineW: 9 },
     { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 8 }
   ];
 
-  // Base star geometry (centered in 0..120 viewBox at 60,60)
   const cx = 60, cy = 60;
   const outer = 46, inner = 20;
   const d = makeStarPath(cx, cy, 5, outer, inner);
@@ -47,59 +39,61 @@ function setupStars() {
     const svg = btn.querySelector('.star-svg');
     if (!svg) return;
 
-    // Find or create elements inside this SVG so each star is independent
-    function ensure(tag, cls, attrs = {}) {
+    // Ensure elements exist, create if missing
+    function ensure(tag, cls, beforeEl = null) {
       let el = svg.querySelector(`.${cls}`);
       if (!el) {
         el = document.createElementNS('http://www.w3.org/2000/svg', tag);
         el.setAttribute('class', cls);
-        svg.insertBefore(el, svg.firstChild);
+        if (beforeEl) svg.insertBefore(el, beforeEl);
+        else svg.appendChild(el);
       }
-      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
       return el;
     }
 
-    const halo = ensure('path', 'star-halo');
-    const outline = ensure('path', 'star-outline');
-    const fill = ensure('path', 'star-fill');
-    const rim = ensure('path', 'star-rim');
-    const gloss = svg.querySelector('.star-gloss') || ensure('ellipse', 'star-gloss', { cx: 46, cy: 34, rx: 22, ry: 9 });
+    // Put halo first, then outline, then fill, then rim, then gloss (so gloss is on top)
+    const glossTemplate = svg.querySelector('.star-gloss');
+    const halo = ensure('path', 'star-halo', glossTemplate);
+    const outline = ensure('path', 'star-outline', glossTemplate);
+    const fill = ensure('path', 'star-fill', glossTemplate);
+    const rim = ensure('path', 'star-rim', glossTemplate);
+    const gloss = glossTemplate || ensure('ellipse', 'star-gloss');
 
     const cfg = configs[i] || configs[0];
 
-    // Assign the same geometry to each path (independent elements)
+    // Assign path data and attributes (independent per star)
     halo.setAttribute('d', d);
-    outline.setAttribute('d', d);
-    fill.setAttribute('d', d);
-    rim.setAttribute('d', d);
-
-    // Halo: larger + svg filter for blur (preferred)
     halo.setAttribute('fill', cfg.gradient);
     halo.setAttribute('opacity', '0.92');
+    // prefer SVG filter (defined in index.html)
     halo.setAttribute('filter', 'url(#haloBlur)');
     halo.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
 
-    // Outline: brown stroke, slightly larger than main
+    outline.setAttribute('d', d);
     outline.setAttribute('fill', 'none');
     outline.setAttribute('stroke', '#7a3e1f');
     outline.setAttribute('stroke-width', String(cfg.outlineW));
     outline.setAttribute('stroke-linejoin', 'round');
     outline.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
+    // Prevent outline from catching pointer events or appearing above fill due to stacking contexts
+    outline.style.pointerEvents = 'none';
 
-    // Fill: main body, scale Y for "gordito"
+    fill.setAttribute('d', d);
     fill.setAttribute('fill', cfg.gradient);
     fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
     fill.setAttribute('stroke-width', '1.1');
+    // scale Y around center to make shape "gordita"
     fill.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
 
-    // Rim: subtle inner light stroke (slightly smaller)
+    rim.setAttribute('d', d);
     rim.setAttribute('fill', 'none');
     rim.setAttribute('stroke', 'rgba(255,255,255,0.18)');
     rim.setAttribute('stroke-width', '6');
     rim.setAttribute('stroke-linejoin', 'round');
     rim.setAttribute('transform', `translate(${cx} ${cy}) scale(0.96) translate(${-cx} ${-cy})`);
+    rim.style.pointerEvents = 'none';
 
-    // Gloss: keep ellipse on top
+    // Gloss ellipse: keep on top
     gloss.setAttribute('fill', 'rgba(255,255,255,0.95)');
     gloss.setAttribute('opacity', '0.95');
     if (i === 1) {
@@ -109,57 +103,23 @@ function setupStars() {
       gloss.setAttribute('ry', '12');
       gloss.setAttribute('transform', 'rotate(-16 50 34)');
     } else {
-      // ensure transform attribute present for consistency
-      const cxg = gloss.getAttribute('cx') || '46';
-      const cyg = gloss.getAttribute('cy') || '34';
-      // keep existing values
+      // default values already in HTML; ensure attributes exist
+      if (!gloss.getAttribute('cx')) gloss.setAttribute('cx', '46');
+      if (!gloss.getAttribute('cy')) gloss.setAttribute('cy', '34');
     }
   });
 }
 
-/* ---------------------------
-   UI + interaction logic
-   --------------------------- */
+// ---------- UI data ----------
+const prizes = [
+  { label: "100% de bono + 1000 fichas", weight: 1 },
+  { label: "150% de bono + 1500 fichas", weight: 1 },
+  { label: "200% de bono + 2000 fichas", weight: 1 }
+];
 
-// We'll call setupStars on DOMContentLoaded, then initialize interactions
-document.addEventListener('DOMContentLoaded', () => {
-  setupStars();
+let locked = true; // locked until landing animation completes
 
-  // Re-query star buttons after setup
-  const starButtonsLocal = Array.from(document.querySelectorAll('.star'));
-
-  // initialize sparkles for each star
-  starButtonsLocal.forEach(btn => initSparksFor(btn));
-
-  // click handlers (enable after landing)
-  starButtonsLocal.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (locked) return;
-      locked = true;
-      starButtonsLocal.forEach(s => s.classList.remove('selected','pop','flip'));
-      btn.classList.add('selected');
-      void btn.offsetWidth;
-      btn.classList.add('pop','flip');
-      await wait(760);
-      const prize = weightedRandom(prizes);
-      showPrize(prize);
-    });
-  });
-
-  // close button handler (modal)
-  const closeBtnLocal = document.getElementById('close-btn');
-  if (closeBtnLocal) {
-    closeBtnLocal.addEventListener('click', () => {
-      hidePrize();
-      starButtonsLocal.forEach(s => s.classList.remove('selected','pop','flip'));
-      locked = false;
-    });
-  }
-});
-
-/* keep existing prize/confetti/canvas code below (unchanged) */
-
-// Weighted random helper (unchanged)
+// Weighted random helper
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
   let r = Math.random() * total;
@@ -170,6 +130,7 @@ function weightedRandom(arr) {
   return arr[arr.length - 1];
 }
 
+// Show / hide prize modal
 function showPrize(prize) {
   const prizeText = document.getElementById('prize-text');
   const modal = document.getElementById('result');
@@ -183,14 +144,59 @@ function showPrize(prize) {
 function hidePrize() {
   const modal = document.getElementById('result');
   if (modal) modal.classList.remove('show');
-  setTimeout(()=> {
-    if (modal) modal.classList.add('hidden');
-  }, 260);
+  setTimeout(()=> { if (modal) modal.classList.add('hidden'); }, 260);
   const confettiContainer = document.getElementById('confetti');
   if (confettiContainer) confettiContainer.innerHTML = '';
 }
 
-/* confetti (unchanged) */
+// ---------- Interaction setup after DOM ----------
+document.addEventListener('DOMContentLoaded', () => {
+  setupStars();
+
+  const starButtons = Array.from(document.querySelectorAll('.star'));
+  const closeBtn = document.getElementById('close-btn');
+
+  // init sparkles for each star
+  starButtons.forEach(btn => initSparksFor(btn));
+
+  // click handlers (restore flip + pop + prize)
+  starButtons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (locked) return;
+      locked = true;
+
+      // clear previous states
+      starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
+      btn.classList.add('selected');
+
+      // force reflow then add animation classes
+      void btn.offsetWidth;
+      btn.classList.add('pop','flip');
+
+      // wait the flip/pop animation (match CSS ~760-820ms)
+      await wait(760);
+
+      // choose prize and show modal
+      const prize = weightedRandom(prizes);
+      showPrize(prize);
+      // unlocking is handled when modal is closed
+    });
+  });
+
+  // close button -> hide modal and unlock
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      hidePrize();
+      starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
+      locked = false;
+    });
+  }
+});
+
+// small helper
+function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+// ---------- Confetti (emoji) ----------
 function explodeConfetti() {
   const confettiContainer = document.getElementById('confetti');
   if (!confettiContainer) return;
@@ -213,11 +219,12 @@ function explodeConfetti() {
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
       { transform: `translateY(${80 + Math.random()*120}vh) rotate(${Math.random()*900 - 450}deg)`, opacity: 0.2 }
     ], { duration, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
+
     setTimeout(()=> { try { el.remove(); } catch(e){} }, duration+220);
   }
 }
 
-/* Canvas sky (twinkle) - unchanged from your version */
+// ---------- Canvas sky (unchanged) ----------
 const canvas = document.getElementById('sky');
 const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
 let skyStars = [], W=0, H=0;
@@ -258,11 +265,9 @@ function draw(now){
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0, '#04101d'); g.addColorStop(0.5, '#07162a'); g.addColorStop(1, '#071a2d');
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-
   const vign = ctx.createRadialGradient(W/2, H*0.36, Math.min(W,H)*0.18, W/2, H/2, Math.max(W,H));
   vign.addColorStop(0,'rgba(20,30,50,0.02)'); vign.addColorStop(1,'rgba(0,0,0,0.28)');
   ctx.fillStyle = vign; ctx.fillRect(0,0,W,H);
-
   ctx.globalCompositeOperation = 'screen';
   for (let i=0;i<skyStars.length;i++){
     const s = skyStars[i];
@@ -284,11 +289,10 @@ function draw(now){
   ctx.globalCompositeOperation = 'source-over';
   requestAnimationFrame(draw);
 }
-
 resize();
 requestAnimationFrame(draw);
 
-/* sparks (per star DOM element) */
+// ---------- Sparks per star element ----------
 function initSparksFor(starEl){
   if (!starEl) return;
   const count = 3 + Math.floor(Math.random()*3);
@@ -310,14 +314,13 @@ function initSparksFor(starEl){
   }
 }
 
-/* landing: remove dropping and enable clicks after animations */
+// ---------- Landing: remove dropping and enable clicks ----------
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.body.classList.remove('dropping');
-    // small buffer for transitions
     setTimeout(() => { locked = false; }, 600);
   }, 60);
 });
 
-/* prevent text selection while interacting */
+// prevent selection
 document.addEventListener('selectstart', e => e.preventDefault());
