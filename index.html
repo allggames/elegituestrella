@@ -13,30 +13,46 @@
     <div class="stars" role="list">
       <button class="star" data-index="0" aria-label="Estrella 1" role="listitem">
         <div class="star-inner">
-          <!-- SVG con gradiente único grad0 -->
+          <!-- SVG con gradiente -->
           <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
             <defs>
               <linearGradient id="grad0" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff6b8"/>
-                <stop offset="20%" stop-color="#ffd64d"/>
-                <stop offset="60%" stop-color="#ffbf00"/>
-                <stop offset="100%" stop-color="#ff9f00"/>
+                <stop offset="0%" stop-color="#fff7c7"/>
+                <stop offset="18%" stop-color="#ffe58a"/>
+                <stop offset="60%" stop-color="#ffc61a"/>
+                <stop offset="100%" stop-color="#ffb000"/>
               </linearGradient>
-              <filter id="glow0" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="6" result="b"/>
-                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
+              <!-- máscara para el reflejo -->
+              <linearGradient id="fade" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+              </linearGradient>
             </defs>
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad0)" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
-            <!-- brillo -->
-            <ellipse cx="36" cy="34" rx="18" ry="8" fill="rgba(255,255,255,0.45)" transform="rotate(-22 36 34)" />
+
+            <!-- estrella "gordita" (aplicamos escala leve por CSS también) -->
+            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+              fill="url(#grad0)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
+            <!-- brillo superior -->
+            <ellipse cx="36" cy="32" rx="20" ry="9" fill="rgba(255,255,255,0.55)" transform="rotate(-22 36 32)" />
           </svg>
 
-          <!-- reflection: misma forma volteada -->
+          <!-- reflection: misma forma volteada y enmascarada -->
           <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad0)" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+            <defs>
+              <linearGradient id="grad0-ref" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stop-color="#fff7c7"/>
+                <stop offset="18%" stop-color="#ffe58a"/>
+                <stop offset="60%" stop-color="#ffc61a"/>
+                <stop offset="100%" stop-color="#ffb000"/>
+              </linearGradient>
+            </defs>
+            <g style="opacity:0.78; filter: blur(5px) saturate(1.05);">
+              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+                fill="url(#grad0-ref)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+            </g>
+            <!-- máscara de desvanecimiento -->
+            <rect x="0" y="0" width="100" height="100" fill="url(#fade)" />
           </svg>
         </div>
       </button>
@@ -46,24 +62,28 @@
           <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
             <defs>
               <linearGradient id="grad1" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff7c9"/>
-                <stop offset="18%" stop-color="#ffe07a"/>
-                <stop offset="55%" stop-color="#ffc720"/>
-                <stop offset="100%" stop-color="#ffad00"/>
+                <stop offset="0%" stop-color="#fff8cf"/>
+                <stop offset="18%" stop-color="#ffeaa0"/>
+                <stop offset="55%" stop-color="#ffd13c"/>
+                <stop offset="100%" stop-color="#ffb300"/>
               </linearGradient>
-              <filter id="glow1" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="6" result="b"/>
-                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
+              <linearGradient id="fade1" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="white" stop-opacity="0.62"/>
+                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+              </linearGradient>
             </defs>
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
-            <ellipse cx="36" cy="34" rx="20" ry="9" fill="rgba(255,255,255,0.48)" transform="rotate(-20 36 34)" />
+            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+              fill="url(#grad1)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
+            <ellipse cx="36" cy="32" rx="22" ry="10" fill="rgba(255,255,255,0.52)" transform="rotate(-20 36 32)" />
           </svg>
 
           <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad1)" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+            <g style="opacity:0.78; filter: blur(5px) saturate(1.03);">
+              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+                fill="url(#grad1)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+            </g>
+            <rect x="0" y="0" width="100" height="100" fill="url(#fade1)" />
           </svg>
         </div>
       </button>
@@ -73,24 +93,28 @@
           <svg viewBox="0 0 100 100" class="star-svg" aria-hidden="true">
             <defs>
               <linearGradient id="grad2" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#fff6b0"/>
-                <stop offset="25%" stop-color="#ffd14a"/>
-                <stop offset="60%" stop-color="#ffb300"/>
-                <stop offset="100%" stop-color="#ff9400"/>
+                <stop offset="0%" stop-color="#fff6bf"/>
+                <stop offset="25%" stop-color="#ffd85a"/>
+                <stop offset="60%" stop-color="#ffb900"/>
+                <stop offset="100%" stop-color="#ff9900"/>
               </linearGradient>
-              <filter id="glow2" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="6" result="b"/>
-                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </feMerge>
+              <linearGradient id="fade2" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+                <stop offset="60%" stop-color="white" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+              </linearGradient>
             </defs>
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
-            <ellipse cx="36" cy="34" rx="17" ry="7" fill="rgba(255,255,255,0.46)" transform="rotate(-24 36 34)" />
+            <polygon class="star-shape" points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+              fill="url(#grad2)" stroke="rgba(0,0,0,0.06)" stroke-width="1.2"/>
+            <ellipse cx="36" cy="32" rx="18" ry="8" fill="rgba(255,255,255,0.5)" transform="rotate(-24 36 32)" />
           </svg>
 
           <svg viewBox="0 0 100 100" class="star-reflection" aria-hidden="true">
-            <polygon points="50,5 61,38 95,38 67,59 78,92 50,72 22,92 33,59 5,38 39,38"
-              fill="url(#grad2)" stroke="rgba(0,0,0,0.03)" stroke-width="1"/>
+            <g style="opacity:0.78; filter: blur(5px) saturate(1.04);">
+              <polygon points="50,6 62,38 96,40 68,60 80,92 50,73 20,92 32,60 4,40 38,38"
+                fill="url(#grad2)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+            </g>
+            <rect x="0" y="0" width="100" height="100" fill="url(#fade2)" />
           </svg>
         </div>
       </button>
