@@ -33,11 +33,6 @@
                 <stop offset="55%" stop-color="rgba(255,255,255,0.22)"/>
                 <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
               </radialGradient>
-              <linearGradient id="fadeDown" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.65)"/>
-                <stop offset="60%" stop-color="rgba(255,255,255,0.12)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-              </linearGradient>
             </defs>
 
             <!-- forma "suavizada" tipo estrella (más redondeada) -->
@@ -48,21 +43,12 @@
             <ellipse cx="44" cy="36" rx="20" ry="9" fill="url(#shine)" transform="rotate(-22 44 36)"/>
           </svg>
 
-          <!-- Reflection (misma forma invertida, con blur y máscara de desvanecimiento) -->
+          <!-- Reflection: ya no contiene <rect> que causaba recuadro -->
           <svg viewBox="0 0 120 120" class="star-reflection" aria-hidden="true">
-            <defs>
-              <linearGradient id="gAref" x1="0" x2="1">
-                <stop offset="0%" stop-color="#fff9c9"/>
-                <stop offset="25%" stop-color="#ffe37a"/>
-                <stop offset="70%" stop-color="#ffc400"/>
-                <stop offset="100%" stop-color="#ff9f00"/>
-              </linearGradient>
-            </defs>
             <g style="opacity:0.78; filter: blur(4px) saturate(1.02);">
               <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
-                fill="url(#gAref)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
+                fill="url(#gA)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
@@ -99,7 +85,6 @@
               <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
                 fill="url(#gB)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
@@ -136,7 +121,6 @@
               <path d="M60 6 L74 38 L108 42 L78 64 L88 96 L60 78 L32 96 L42 64 L12 42 L46 38 Z"
                 fill="url(#gC)" stroke="rgba(0,0,0,0.03)" stroke-width="0.9"/>
             </g>
-            <rect x="0" y="0" width="120" height="120" fill="url(#fadeDown)" />
           </svg>
         </div>
       </button>
