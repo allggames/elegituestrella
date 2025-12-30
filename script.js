@@ -41,17 +41,18 @@ starButtons.forEach(btn => {
     if (locked) return;
     locked = true;
 
-    // Animación: marcar seleccionado y aplicar flip
-    starButtons.forEach(s => s.classList.remove('selected','pop'));
+    // Reset visual en todos
+    starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
     btn.classList.add('selected');
-    // Forzar reflow antes de añadir pop forcer animation
+
+    // Forzar reflow para que la animación pop funcione correctamente
     void btn.offsetWidth;
     btn.classList.add('pop');
 
-    // Añadir clase flip para rotación 3D (se aplica a .star element)
+    // Añadir clase flip para rotación 3D
     btn.classList.add('flip');
 
-    // Esperar a que la rotación ocurra (tiempo coincide con transition CSS)
+    // Esperar a que la rotación termine (coincide con transition)
     await wait(820);
 
     // Elegir premio
@@ -60,7 +61,7 @@ starButtons.forEach(btn => {
     // Mostrar modal con resultado
     showPrize(prize);
 
-    // Nota: no desbloqueamos hasta que el usuario cierre el modal
+    // no desbloqueamos hasta cerrar
   });
 });
 
@@ -77,20 +78,20 @@ function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
-  const count = 28;
+  const count = 30;
   for (let i=0;i<count;i++){
     const el = document.createElement('div');
     el.className = 'confetti-item';
     el.style.position = 'absolute';
     el.style.left = (Math.random()*100) + '%';
     el.style.top = (-10 - Math.random()*20) + '%';
-    el.style.fontSize = (12 + Math.random()*34) + 'px';
+    el.style.fontSize = (12 + Math.random()*36) + 'px';
     el.style.opacity = (0.6 + Math.random()*0.4);
     el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     confettiContainer.appendChild(el);
 
-    const duration = 1400 + Math.random()*1500;
+    const duration = 1400 + Math.random()*1600;
     el.animate([
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
       { transform: `translateY(${60 + Math.random()*160}vh) rotate(${Math.random()*900 - 450}deg)`, opacity: 0.2 }
