@@ -1,13 +1,9 @@
-// Configuración de premios
-// Puedes añadir un campo "weight" para cambiar probabilidades
+// Premios configurables
 const prizes = [
   { label: "100% de bono + 1000 fichas", bonusPercent: 100, chips: 1000, weight: 1 },
   { label: "150% de bono + 1500 fichas", bonusPercent: 150, chips: 1500, weight: 1 },
   { label: "200% de bono + 2000 fichas", bonusPercent: 200, chips: 2000, weight: 1 }
 ];
-
-// Si quieres probabilidades diferentes, cambia los weight: e.g. 70,20,10
-// Ejemplo: [ {.., weight:70}, {.., weight:20}, {.., weight:10} ]
 
 const starButtons = Array.from(document.querySelectorAll('.star'));
 const modal = document.getElementById('result');
@@ -31,14 +27,12 @@ function showPrize(prize) {
   prizeText.textContent = `${prize.label}`;
   modal.classList.remove('hidden');
   modal.classList.add('show');
-  // confetti simple
   explodeConfetti();
 }
 
 function hidePrize() {
   modal.classList.remove('show');
   setTimeout(()=> modal.classList.add('hidden'), 260);
-  // limpiar confetti
   confettiContainer.innerHTML = '';
 }
 
@@ -46,67 +40,66 @@ starButtons.forEach(btn => {
   btn.addEventListener('click', async (e) => {
     if (locked) return;
     locked = true;
-    // animar estrella seleccionada
-    const chosen = e.currentTarget;
-    starButtons.forEach(s => s.classList.remove('selected'));
-    chosen.classList.add('selected');
-    chosen.classList.add('pop');
 
-    // breve delay para animación y suspenso
-    await wait(700);
+    // Animación: marcar seleccionado y aplicar flip
+    starButtons.forEach(s => s.classList.remove('selected','pop'));
+    btn.classList.add('selected');
+    // Forzar reflow antes de añadir pop forcer animation
+    void btn.offsetWidth;
+    btn.classList.add('pop');
 
-    // elegir premio (puedes cambiar a weightedRandom)
+    // Añadir clase flip para rotación 3D (se aplica a .star element)
+    btn.classList.add('flip');
+
+    // Esperar a que la rotación ocurra (tiempo coincide con transition CSS)
+    await wait(820);
+
+    // Elegir premio
     const prize = weightedRandom(prizes);
 
-    // mostrar resultado
+    // Mostrar modal con resultado
     showPrize(prize);
 
-    // mantener bloqueado hasta cerrar
+    // Nota: no desbloqueamos hasta que el usuario cierre el modal
   });
 });
 
 closeBtn.addEventListener('click', () => {
   hidePrize();
-  // resetear estado visual después de cerrar
-  starButtons.forEach(s => {
-    s.classList.remove('selected','pop');
-  });
+  // resetear visual
+  starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
   locked = false;
 });
 
 function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 
-/* Confetti muy simple: crea emojis coloridos que caen */
+/* Confetti simple (emojis) */
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
-  const count = 24;
+  const count = 28;
   for (let i=0;i<count;i++){
     const el = document.createElement('div');
     el.className = 'confetti-item';
     el.style.position = 'absolute';
     el.style.left = (Math.random()*100) + '%';
-    el.style.top = (-10 - Math.random()*10) + '%';
-    el.style.fontSize = (12 + Math.random()*28) + 'px';
+    el.style.top = (-10 - Math.random()*20) + '%';
+    el.style.fontSize = (12 + Math.random()*34) + 'px';
     el.style.opacity = (0.6 + Math.random()*0.4);
     el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
     el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
     confettiContainer.appendChild(el);
 
-    // animar caída
-    const duration = 1500 + Math.random()*1200;
+    const duration = 1400 + Math.random()*1500;
     el.animate([
       { transform: `translateY(0) rotate(${Math.random()*360}deg)`, opacity: 1 },
-      { transform: `translateY(${60 + Math.random()*140}vh) rotate(${Math.random()*720 - 360}deg)`, opacity: 0.2 }
+      { transform: `translateY(${60 + Math.random()*160}vh) rotate(${Math.random()*900 - 450}deg)`, opacity: 0.2 }
     ], {
       duration,
       easing: 'cubic-bezier(.2,.8,.2,1)',
       fill: 'forwards'
     });
 
-    // remover al terminar
-    setTimeout(()=> {
-      try { el.remove(); } catch(e){}
-    }, duration+200);
+    setTimeout(()=> { try { el.remove(); } catch(e){} }, duration+220);
   }
 }
