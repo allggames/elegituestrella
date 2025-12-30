@@ -1,4 +1,4 @@
-// Premios configurables
+// Premios
 const prizes = [
   { label: "100% de bono + 1000 fichas", bonusPercent: 100, chips: 1000, weight: 1 },
   { label: "150% de bono + 1500 fichas", bonusPercent: 150, chips: 1500, weight: 1 },
@@ -36,12 +36,14 @@ function hidePrize() {
   confettiContainer.innerHTML = '';
 }
 
-starButtons.forEach(btn => {
+starButtons.forEach((btn, idx) => {
+  // inicializamos pequeños "sparkles" con posiciones/delays aleatorios
+  initSparksFor(btn);
+
   btn.addEventListener('click', async (e) => {
     if (locked) return;
     locked = true;
 
-    // Reset visual en todos
     starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
     btn.classList.add('selected');
 
@@ -52,13 +54,14 @@ starButtons.forEach(btn => {
     // Flip 3D
     btn.classList.add('flip');
 
-    // Esperar rotación
+    // Esperar rotación (coincide con CSS)
     await wait(820);
 
-    // Elegir premio y mostrar
+    // Elegir premio
     const prize = weightedRandom(prizes);
+
+    // Mostrar modal
     showPrize(prize);
-    // bloqueamos hasta cerrar modal
   });
 });
 
@@ -70,7 +73,7 @@ closeBtn.addEventListener('click', () => {
 
 function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 
-/* Confetti simple (emojis) */
+/* Confetti (igual que antes) */
 function explodeConfetti() {
   confettiContainer.innerHTML = '';
   const emojis = ["✨","🎉","⭐️","💫","🎊"];
@@ -121,17 +124,15 @@ window.addEventListener('resize', () => { resize(); });
 function initStars() {
   stars = [];
   const area = window.innerWidth * window.innerHeight;
-  const count = Math.max(80, Math.floor(area / 14000)); // ajustable
+  const count = Math.max(80, Math.floor(area / 14000));
   for (let i=0;i<count;i++){
     const x = Math.random() * W;
     const y = Math.random() * H * 0.95;
-    const r = (Math.random() * 1.5 + 0.3) * DPR;
-    // parámetros para twinkle sutil
-    const baseA = Math.random() * 0.6 + 0.3;      // brillo base
-    const speed = Math.random() * 0.6 + 0.2;      // velocidad de parpadeo
-    const amp = Math.random() * 0.22 + 0.06;      // amplitud del parpadeo (sutil)
+    const r = (Math.random() * 1.8 + 0.4) * DPR;
+    const baseA = Math.random() * 0.6 + 0.28;
+    const speed = Math.random() * 0.7 + 0.18;
+    const amp = Math.random() * 0.22 + 0.06;
     const phase = Math.random() * Math.PI * 2;
-    // ocasional "spark" (destello breve y más intenso) controlado por prob
     const hasSpark = Math.random() < 0.12;
     stars.push({x,y,r,baseA,speed,amp,phase,hasSpark,sparkTimer:0});
   }
@@ -142,41 +143,27 @@ function draw(now){
   const dt = (now - last) / 1000;
   last = now;
 
-  // sky gradient
   const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0, '#05101e');
+  g.addColorStop(0, '#04101d');
   g.addColorStop(0.5, '#07162b');
   g.addColorStop(1, '#071a2d');
   ctx.fillStyle = g;
   ctx.fillRect(0,0,W,H);
 
-  // subtle nebula / vignette for depth
   const vign = ctx.createRadialGradient(W/2, H*0.36, Math.min(W,H)*0.18, W/2, H/2, Math.max(W,H));
   vign.addColorStop(0, 'rgba(20,30,50,0.02)');
   vign.addColorStop(1, 'rgba(0,0,0,0.28)');
   ctx.fillStyle = vign;
   ctx.fillRect(0,0,W,H);
 
-  // draw stars with subtle twinkle
   ctx.globalCompositeOperation = 'screen';
   for (let i=0;i<stars.length;i++){
     const s = stars[i];
-
-    // update phase
     s.phase += dt * s.speed;
-    // basic twinkle signal (sutil)
     let tw = s.baseA * (1 + Math.sin(s.phase) * s.amp);
+    if (s.hasSpark && Math.random() < 0.006) { s.sparkTimer = 0.12 + Math.random() * 0.34; }
+    if (s.sparkTimer > 0) { tw += 0.6 * Math.exp(-5 * (0.4 - s.sparkTimer)); s.sparkTimer -= dt; }
 
-    // occasional random spark: increment timer and produce brief bump
-    if (s.hasSpark && Math.random() < 0.008) {
-      s.sparkTimer = 0.12 + Math.random() * 0.28; // short burst in seconds
-    }
-    if (s.sparkTimer > 0) {
-      tw += 0.6 * Math.exp(-5 * (0.4 - s.sparkTimer)); // rápido fade
-      s.sparkTimer -= dt;
-    }
-
-    // draw soft glow
     const rad = s.r * (1 + Math.sin(s.phase) * 0.12);
     const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, rad*4.5);
     grad.addColorStop(0, `rgba(255,255,255,${Math.min(1, 0.95 * tw)})`);
@@ -186,7 +173,6 @@ function draw(now){
     ctx.fillStyle = grad;
     ctx.fillRect(s.x - rad*4.5, s.y - rad*4.5, rad*9, rad*9);
 
-    // tiny hard point for sparkle center (subtle)
     ctx.fillStyle = `rgba(255,255,255,${0.35 * tw})`;
     ctx.fillRect(Math.round(s.x), Math.round(s.y), Math.max(1, DPR), Math.max(1, DPR));
   }
@@ -198,5 +184,30 @@ function draw(now){
 resize();
 requestAnimationFrame(draw);
 
-/* evitar selección de texto al clicar */
+/* ---------------------------
+   Spark initialiser: create small sparkle spans per star with random pos/delay
+   --------------------------- */
+function initSparksFor(starEl){
+  // create 3-5 sparks per star
+  const count = 3 + Math.floor(Math.random()*3);
+  for (let i=0;i<count;i++){
+    const sp = document.createElement('span');
+    sp.className = 'spark';
+    // random position across star area, bias toward top/around star
+    const lx = 30 + Math.random()*40; // percent
+    const ty = 18 + Math.random()*38;
+    const size = 4 + Math.random()*8;
+    const dur = (0.9 + Math.random()*1.4).toFixed(2) + 's';
+    const delay = (Math.random()*1.6).toFixed(2) + 's';
+    sp.style.left = lx + '%';
+    sp.style.top = ty + '%';
+    sp.style.width = size + 'px';
+    sp.style.height = size + 'px';
+    sp.style.setProperty('--dur', dur);
+    sp.style.setProperty('--delay', delay);
+    starEl.appendChild(sp);
+  }
+}
+
+/* evitar selección */
 document.addEventListener('selectstart', e => e.preventDefault());
