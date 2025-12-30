@@ -1,7 +1,6 @@
-// script.js — versión final: restaura flip, muestra premio y confetti/emojis,
-// mantiene paths independientes por estrella y evita solapamientos.
+// script.js — ajuste: outline usa la misma transformación que el fill; gloss (elipse blanca) ocultada
 
-// ---------- Geometry: crea "d" para estrella de 5 puntas ----------
+/* ---------- Geometry: crea "d" para estrella de 5 puntas ---------- */
 function makeStarPath(cx, cy, spikes, outerR, innerR) {
   let rot = -Math.PI / 2;
   const step = Math.PI / spikes;
@@ -20,15 +19,15 @@ function makeStarPath(cx, cy, spikes, outerR, innerR) {
   return d;
 }
 
-// ---------- Setup: asigna rutas / elementos independientes a cada SVG ----------
+/* ---------- Setup: asigna rutas / elementos independientes a cada SVG ---------- */
 function setupStars() {
   const starEls = Array.from(document.querySelectorAll('.star'));
   if (!starEls.length) return;
 
   const configs = [
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 8 },
-    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineW: 9 },
-    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 8 }
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill1)', outlineW: 7 },
+    { haloScale: 1.30, mainScaleY: 1.36, gradient: 'url(#fill2)', outlineW: 8 },
+    { haloScale: 1.22, mainScaleY: 1.28, gradient: 'url(#fill3)', outlineW: 7 }
   ];
 
   const cx = 60, cy = 60;
@@ -39,87 +38,79 @@ function setupStars() {
     const svg = btn.querySelector('.star-svg');
     if (!svg) return;
 
-    // Ensure elements exist, create if missing
-    function ensure(tag, cls, beforeEl = null) {
+    // Create elements if missing
+    function ensure(tag, cls, before = null) {
       let el = svg.querySelector(`.${cls}`);
       if (!el) {
         el = document.createElementNS('http://www.w3.org/2000/svg', tag);
         el.setAttribute('class', cls);
-        if (beforeEl) svg.insertBefore(el, beforeEl);
+        if (before) svg.insertBefore(el, before);
         else svg.appendChild(el);
       }
       return el;
     }
 
-    // Put halo first, then outline, then fill, then rim, then gloss (so gloss is on top)
-    const glossTemplate = svg.querySelector('.star-gloss');
+    // Put halo first so it's behind everything, then fill, rim, outline, gloss last
+    const glossTemplate = svg.querySelector('.star-gloss'); // may be present in HTML
     const halo = ensure('path', 'star-halo', glossTemplate);
-    const outline = ensure('path', 'star-outline', glossTemplate);
     const fill = ensure('path', 'star-fill', glossTemplate);
     const rim = ensure('path', 'star-rim', glossTemplate);
+    const outline = ensure('path', 'star-outline', glossTemplate);
     const gloss = glossTemplate || ensure('ellipse', 'star-gloss');
 
     const cfg = configs[i] || configs[0];
 
-    // Assign path data and attributes (independent per star)
+    // assign same d to all paths (independent per star)
     halo.setAttribute('d', d);
+    fill.setAttribute('d', d);
+    rim.setAttribute('d', d);
+    outline.setAttribute('d', d);
+
+    // Halo (bigger, blurred)
     halo.setAttribute('fill', cfg.gradient);
     halo.setAttribute('opacity', '0.92');
-    // prefer SVG filter (defined in index.html)
     halo.setAttribute('filter', 'url(#haloBlur)');
     halo.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
 
-    outline.setAttribute('d', d);
-    outline.setAttribute('fill', 'none');
-    outline.setAttribute('stroke', '#7a3e1f');
-    outline.setAttribute('stroke-width', String(cfg.outlineW));
-    outline.setAttribute('stroke-linejoin', 'round');
-    outline.setAttribute('transform', `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`);
-    // Prevent outline from catching pointer events or appearing above fill due to stacking contexts
-    outline.style.pointerEvents = 'none';
-
-    fill.setAttribute('d', d);
+    // Fill (main body) - scaleY around center
     fill.setAttribute('fill', cfg.gradient);
     fill.setAttribute('stroke', 'rgba(0,0,0,0.06)');
     fill.setAttribute('stroke-width', '1.1');
-    // scale Y around center to make shape "gordita"
     fill.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
 
-    rim.setAttribute('d', d);
+    // Rim (subtle inner light)
     rim.setAttribute('fill', 'none');
-    rim.setAttribute('stroke', 'rgba(255,255,255,0.18)');
-    rim.setAttribute('stroke-width', '6');
+    rim.setAttribute('stroke', 'rgba(255,255,255,0.16)');
+    rim.setAttribute('stroke-width', '5.5');
     rim.setAttribute('stroke-linejoin', 'round');
     rim.setAttribute('transform', `translate(${cx} ${cy}) scale(0.96) translate(${-cx} ${-cy})`);
     rim.style.pointerEvents = 'none';
 
-    // Gloss ellipse: keep on top
-    gloss.setAttribute('fill', 'rgba(255,255,255,0.95)');
-    gloss.setAttribute('opacity', '0.95');
-    if (i === 1) {
-      gloss.setAttribute('cx', '50');
-      gloss.setAttribute('cy', '34');
-      gloss.setAttribute('rx', '26');
-      gloss.setAttribute('ry', '12');
-      gloss.setAttribute('transform', 'rotate(-16 50 34)');
-    } else {
-      // default values already in HTML; ensure attributes exist
-      if (!gloss.getAttribute('cx')) gloss.setAttribute('cx', '46');
-      if (!gloss.getAttribute('cy')) gloss.setAttribute('cy', '34');
-    }
+    // Outline: use the SAME transform as the fill so it aligns exactly with the yellow body.
+    // We place outline after rim so order is: halo -> fill -> rim -> outline -> gloss
+    outline.setAttribute('fill', 'none');
+    outline.setAttribute('stroke', '#7a3e1f');
+    outline.setAttribute('stroke-width', String(cfg.outlineW));
+    outline.setAttribute('stroke-linejoin', 'round');
+    outline.setAttribute('transform', `translate(${cx} ${cy}) scale(1 ${cfg.mainScaleY}) translate(${-cx} ${-cy})`);
+    outline.style.pointerEvents = 'none';
+
+    // Gloss: user didn't like big white oval — hide by default (opacity 0). If later you want a small highlight,
+    // we can enable a subtle one.
+    gloss.setAttribute('fill', 'rgba(255,255,255,0.96)');
+    gloss.setAttribute('opacity', '0'); // HIDDEN
+    // optional: if you want a tiny specular instead of the big oval, set opacity ~0.85 and smaller rx/ry.
   });
 }
 
-// ---------- UI data ----------
+/* ---------- UI logic (prizes, flip, confetti...) ---------- */
+
 const prizes = [
   { label: "100% de bono + 1000 fichas", weight: 1 },
   { label: "150% de bono + 1500 fichas", weight: 1 },
   { label: "200% de bono + 2000 fichas", weight: 1 }
 ];
 
-let locked = true; // locked until landing animation completes
-
-// Weighted random helper
 function weightedRandom(arr) {
   const total = arr.reduce((s, x) => s + (x.weight || 1), 0);
   let r = Math.random() * total;
@@ -130,7 +121,10 @@ function weightedRandom(arr) {
   return arr[arr.length - 1];
 }
 
-// Show / hide prize modal
+let locked = true;
+
+function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+
 function showPrize(prize) {
   const prizeText = document.getElementById('prize-text');
   const modal = document.getElementById('result');
@@ -149,54 +143,42 @@ function hidePrize() {
   if (confettiContainer) confettiContainer.innerHTML = '';
 }
 
-// ---------- Interaction setup after DOM ----------
+/* ---------- DOM Ready: setup stars + interactions ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   setupStars();
 
   const starButtons = Array.from(document.querySelectorAll('.star'));
   const closeBtn = document.getElementById('close-btn');
 
-  // init sparkles for each star
+  // sparkles per star
   starButtons.forEach(btn => initSparksFor(btn));
 
-  // click handlers (restore flip + pop + prize)
+  // click handler: flip + reveal prize + confetti
   starButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
       if (locked) return;
       locked = true;
-
-      // clear previous states
       starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
       btn.classList.add('selected');
-
-      // force reflow then add animation classes
       void btn.offsetWidth;
       btn.classList.add('pop','flip');
-
-      // wait the flip/pop animation (match CSS ~760-820ms)
       await wait(760);
-
-      // choose prize and show modal
       const prize = weightedRandom(prizes);
       showPrize(prize);
-      // unlocking is handled when modal is closed
+      // unlock on modal close
     });
   });
 
-  // close button -> hide modal and unlock
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      hidePrize();
-      starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
-      locked = false;
-    });
-  }
+  if (closeBtn) closeBtn.addEventListener('click', () => {
+    hidePrize();
+    starButtons.forEach(s => s.classList.remove('selected','pop','flip'));
+    locked = false;
+  });
 });
 
-// small helper
-function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+/* ---------- confetti, sky canvas, sparks (same as before) ---------- */
 
-// ---------- Confetti (emoji) ----------
+// confetti
 function explodeConfetti() {
   const confettiContainer = document.getElementById('confetti');
   if (!confettiContainer) return;
@@ -224,7 +206,7 @@ function explodeConfetti() {
   }
 }
 
-// ---------- Canvas sky (unchanged) ----------
+// sky canvas (same implementation as you had)
 const canvas = document.getElementById('sky');
 const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
 let skyStars = [], W=0, H=0;
@@ -292,7 +274,7 @@ function draw(now){
 resize();
 requestAnimationFrame(draw);
 
-// ---------- Sparks per star element ----------
+// sparks per star element
 function initSparksFor(starEl){
   if (!starEl) return;
   const count = 3 + Math.floor(Math.random()*3);
@@ -314,7 +296,7 @@ function initSparksFor(starEl){
   }
 }
 
-// ---------- Landing: remove dropping and enable clicks ----------
+// landing remove dropping and enable clicks after animations
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.body.classList.remove('dropping');
