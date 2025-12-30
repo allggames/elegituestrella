@@ -75,7 +75,7 @@ function setupStars() {
       white.setAttribute('rx', '60');
       white.setAttribute('ry', '60');
       white.setAttribute('opacity', '0.12');    // ajusta opacidad si hace falta
-      white.style.filter = 'blur(9px)';         // efecto blur para que quede "halo"
+      white.style.filter = 'blur(6px)';         // efecto blur para que quede "halo"
     }
   });
 }
