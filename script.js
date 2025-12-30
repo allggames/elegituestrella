@@ -25,59 +25,60 @@
   }
 
   /* ---------- Setup: asigna d y transforms a cada SVG de estrella ---------- */
-  function setupStars() {
-    const starEls = Array.from(document.querySelectorAll('.star'));
-    if (!starEls.length) return;
+ // Reemplaza la función setupStars() actual por esta en script.js
+function setupStars() {
+  const starEls = Array.from(document.querySelectorAll('.star'));
+  if (!starEls.length) return;
 
-    // Ajustes por estrella: haloScale, scale vertical del cuerpo y desplazamiento del óvalo blanco
-    const configs = [
-      { haloScale: 1.18, bodyScaleY: 1.20, whiteOffsetY: 28, whiteRx: 26 }, // izquierda
-      { haloScale: 1.34, bodyScaleY: 1.36, whiteOffsetY: 26, whiteRx: 30 }, // centro
-      { haloScale: 1.18, bodyScaleY: 1.20, whiteOffsetY: 28, whiteRx: 26 }  // derecha
-    ];
+  // Base geométrica (si quieres cambiar tamaño base, modifica outer/inner)
+  const cx = 60, cy = 60;
+  const outer = 46, inner = 20;
+  const d = makeStarPath(cx, cy, 5, outer, inner);
 
-    // Base geométrica (si quieres cambiar el tamaño de todas: modifica outer/inner)
-    const cx = 60, cy = 60;
-    const outer = 46; // radio exterior (tamaño general)
-    const inner = 20; // radio interior (puntiagudo vs redondeado)
-    const d = makeStarPath(cx, cy, 5, outer, inner);
+  starEls.forEach((btn, i) => {
+    const svg = btn.querySelector('.star-svg');
+    if (!svg) return;
 
-    starEls.forEach((btn, i) => {
-      const svg = btn.querySelector('.star-svg');
-      if (!svg) return;
+    // Elementos dentro del SVG (debes tenerlos en tu HTML: .halo, .body, .rim, .white-halo)
+    const halo = svg.querySelector('.halo');       // path usado como halo/difuso
+    const body = svg.querySelector('.body');       // path principal (amarillo)
+    const rim = svg.querySelector('.rim');         // rim / sub-outline
+    const white = svg.querySelector('.white-halo'); // ellipse blanco detrás
 
-      const halo = svg.querySelector('.halo');
-      const body = svg.querySelector('.body');
-      const rim = svg.querySelector('.rim');
-      const white = svg.querySelector('.white-halo');
+    // Asignamos la misma geometría a cada path
+    if (halo) halo.setAttribute('d', d);
+    if (body) body.setAttribute('d', d);
+    if (rim)  rim.setAttribute('d', d);
 
-      const cfg = configs[i] || configs[0];
+    // Aquí aplicamos EXACTAMENTE las transformaciones que escribiste en la consola:
+    if (i === 0 || i === 2) {
+      // estrellas laterales (pequeñas)
+      // body = scale(1.5, 1.5)
+      if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5 1.5) translate(${-cx} ${-cy})`);
+      // rim (la "estrella más chica del centro de los costados") -> la dejás en scale(1)
+      if (rim)  rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1 1) translate(${-cx} ${-cy})`);
+      // halo ligeramente más grande (opcional). Mantengo coherencia:
+      if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.5) translate(${-cx} ${-cy})`);
+    } else if (i === 1) {
+      // estrella central (grande)
+      if (body) body.setAttribute('transform', `translate(${cx} ${cy}) scale(1.80 1.80) translate(${-cx} ${-cy})`);
+      // dentro de la estrella central, el "pequeño centro" que pediste lo interpreto como rim/inner:
+      if (rim) rim.setAttribute('transform', `translate(${cx} ${cy}) scale(1.2 1.2) translate(${-cx} ${-cy})`);
+      // halo central más grande
+      if (halo) halo.setAttribute('transform', `translate(${cx} ${cy}) scale(1.8) translate(${-cx} ${-cy})`);
+    }
 
-      // Asignar la geometría a los elementos (cada estrella tiene sus propios elementos)
-      [halo, body, rim].forEach(el => {
-        if (el) el.setAttribute('d', d);
-      });
-
-      // Transforms: el cuerpo y el halo deben coincidir en forma visual
-      const bodyTransform = `translate(${cx} ${cy}) scale(1 ${cfg.bodyScaleY}) translate(${-cx} ${-cy})`;
-      const haloTransform = `translate(${cx} ${cy}) scale(${cfg.haloScale}) translate(${-cx} ${-cy})`;
-      const rimTransform = `translate(${cx} ${cy}) scale(0.96) translate(${-cx} ${-cy})`;
-
-      if (body) body.setAttribute('transform', bodyTransform);
-      if (halo) halo.setAttribute('transform', haloTransform);
-      if (rim) rim.setAttribute('transform', rimTransform);
-
-      // White halo (óvalo) queda DETRÁS de la estrella y NO escalado en Y (se mantiene ovalado)
-      if (white) {
-        white.setAttribute('cx', String(cx));
-        white.setAttribute('cy', String(cfg.whiteOffsetY));
-        white.setAttribute('rx', String(cfg.whiteRx));
-        white.setAttribute('ry', String(Math.round(cfg.whiteRx * 0.45)));
-        white.setAttribute('opacity', '0.75');
-        white.style.filter = 'blur(6px)';
-      }
-    });
-  }
+    // White halo (óvalo blanco) atrás con cx=60,cy=60,rx=60,ry=60 (tú pediste 60 para cada)
+    if (white) {
+      white.setAttribute('cx', '60');
+      white.setAttribute('cy', '60');
+      white.setAttribute('rx', '60');
+      white.setAttribute('ry', '60');
+      white.setAttribute('opacity', '0.25');    // ajusta opacidad si hace falta
+      white.style.filter = 'blur(9px)';         // efecto blur para que quede "halo"
+    }
+  });
+}
 
   /* ---------- UI & interactions (flip, prize, confetti) ---------- */
   const prizes = [
