@@ -1,51 +1,26 @@
 :root{
   --accent: #ffbf4d;
   --modal-bg: #ffffff;
-  --text: #f6f7fb;
   --shadow: rgba(0,0,0,0.28);
 }
 
-/* Página en pantalla completa */
+/* Reset y layout */
 *{box-sizing:border-box}
 html,body{height:100%; margin:0; padding:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
-
 body{
   overflow:hidden;
-  background: linear-gradient(180deg, #071029 0%, #081527 40%, #0b1a3a 100%); /* fallback si canvas falla */
-  color:var(--text);
+  background: linear-gradient(180deg, #04101d 0%, #07162a 50%, #071a2d 100%);
+  color:#fff;
 }
 
-/* canvas ocupa todo el fondo */
-#sky{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:0;
-  display:block;
-}
+/* canvas */
+#sky{ position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block; }
 
-/* Contenido centrado vertical/horizontal */
-main{
-  position:relative;
-  z-index:2;
-  width:100%;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-}
+/* contenido centrado */
+main{ position:relative; z-index:2; width:100%; height:100vh; display:flex; align-items:center; justify-content:center; pointer-events:none; }
 
-/* estrellas en centro (y permiten interacción) */
-.stars{
-  display:flex;
-  gap:2.2rem;
-  align-items:flex-end;
-  justify-content:center;
-  perspective:1100px;
-  pointer-events:auto;
-}
+/* estrellas */
+.stars{ display:flex; gap:2.2rem; align-items:flex-end; justify-content:center; perspective:1100px; pointer-events:auto; }
 
 /* botón estrella */
 .star{
@@ -63,39 +38,65 @@ main{
   outline:none;
   pointer-events:auto;
 }
+
+/* positions */
 .star:nth-child(1){ transform: translateY(18px) scale(0.95); }
 .star:nth-child(2){ transform: translateY(0) scale(1.18); }
 .star:nth-child(3){ transform: translateY(18px) scale(0.95); }
 
-/* wrapper que gira (3D) */
-.star-inner{
-  width:100%;
-  height:100%;
-  transform-style:preserve-3d;
-  transition: transform 0.85s cubic-bezier(.2,.9,.25,1);
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  position:relative;
+/* glow halo behind star using pseudo-element (no rect artifacts) */
+.star::before{
+  content:'';
+  position:absolute;
+  left:50%;
+  top:46%;
+  transform:translate(-50%,-50%);
+  width:220px;
+  height:160px;
+  border-radius:50%;
+  background: radial-gradient(circle at 50% 35%, rgba(255,240,160,0.85), rgba(255,200,60,0.28), rgba(255,140,20,0.06), rgba(0,0,0,0));
+  filter: blur(18px) saturate(1.05);
+  opacity:0.95;
+  pointer-events:none;
+  z-index:0;
 }
 
-/* flip 3D al añadir clase .flip */
+/* subtle underside shadow */
+.star::after{
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:8%;
+  transform:translateX(-50%) translateY(0);
+  width:120px;
+  height:24px;
+  border-radius:50%;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.35), rgba(0,0,0,0.14), rgba(0,0,0,0));
+  filter: blur(8px);
+  opacity:0.95;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* wrapper que gira (3D) */
+.star-inner{ width:100%; height:100%; transform-style:preserve-3d; transition: transform 0.85s cubic-bezier(.2,.9,.25,1); display:flex; align-items:flex-end; justify-content:center; position:relative; z-index:2; }
+
+/* flip */
 .star.flip .star-inner{ transform: rotateY(180deg); }
 
-/* SVG tamaño y profundidad */
-.star-svg{
-  width:190px;
-  height:190px;
-  transform: translateZ(36px);
-  display:block;
-  border-radius:12px;
-  filter: drop-shadow(0 28px 34px rgba(0,0,0,0.2));
-}
+/* SVG */
+.star-svg{ width:190px; height:190px; transform: translateZ(36px); display:block; border-radius:12px; z-index:3; }
 
-/* hacer la forma un poco "gordita" con escala */
+/* halo path inside svg reduced so main visual sits above ::before */
+.halo{ opacity:0.85; }
+
+/* star shape slight scale (gordita) */
 .star-path{ transform-origin:50% 50%; transform: scale(1.06,1.14); transition: transform .28s ease; }
 
-/* reflection (invertida, desenfocada y enmascarada) */
+/* rim highlight: subtle */
+.rim-highlight{ mix-blend-mode:screen; }
+
+/* reflection (no rect) fade by mask */
 .star-reflection{
   width:190px;
   height:190px;
@@ -104,13 +105,13 @@ main{
   transform: translateX(-50%) scaleY(-1) translateY(74px) scale(0.98);
   opacity:0.78;
   filter: blur(4px) saturate(.98);
-  /* usamos mask para fade en vez de <rect> dentro del SVG */
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.62), rgba(0,0,0,0));
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.62), rgba(0,0,0,0));
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0));
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0));
   pointer-events:none;
+  z-index:1;
 }
 
-/* estilo al seleccionado (pop) */
+/* selected / pop */
 .star.selected .star-svg{ transform: translateZ(46px) scale(1.06) rotate(-4deg); filter: drop-shadow(0 40px 44px rgba(0,0,0,0.22)); }
 .star.pop .star-svg{ animation: pop .56s cubic-bezier(.2,.9,.2,1); }
 @keyframes pop {
@@ -119,21 +120,43 @@ main{
   100%{ transform: translateZ(46px) scale(1.06) rotate(0); }
 }
 
-/* Modal */
+/* spark elements (created by JS) */
+.star .spark{
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.98) 0%, rgba(255,230,170,0.85) 40%, rgba(255,160,50,0.06) 70%, rgba(255,120,0,0) 100%);
+  filter: blur(1.2px) drop-shadow(0 1px 6px rgba(255,200,80,0.25));
+  pointer-events:none;
+  z-index:4;
+  opacity:0;
+  transform: scale(0.6);
+  will-change: opacity, transform;
+}
+
+/* sparkle animation (JS sets --d and --dur) */
+@keyframes sparkPulse {
+  0% { opacity: 0; transform: scale(0.5) translateY(0); }
+  20% { opacity: 1; transform: scale(1.05) translateY(-4px); }
+  60% { opacity: 0.6; transform: scale(0.9) translateY(-2px); }
+  100% { opacity: 0; transform: scale(0.6) translateY(0); }
+}
+.star .spark { animation: sparkPulse var(--dur,1.2s) var(--delay,0s) infinite cubic-bezier(.2,.9,.2,1); }
+
+/* modal and confetti (unchanged visuals) */
 .modal{ position:fixed; inset:0; display:flex; justify-content:center; align-items:center; pointer-events:none; z-index:6; }
 .modal .modal-content{ background:var(--modal-bg); padding:1.25rem 1.4rem; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.36); min-width:300px; transform: translateY(14px); opacity:0; transition:all .22s ease; pointer-events:auto; color:#102029; }
 .modal.show .modal-content{ transform: translateY(0); opacity:1; }
 .hidden{ display:none !important; }
-
-/* confetti container sobre todo */
 #confetti{ position:fixed; inset:0; z-index:5; pointer-events:none; }
 
-/* pequeño acceso visual oculto para el H1 */
 .visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
 
 /* responsive */
 @media (max-width:600px){
   .star{ width:140px; height:170px; }
   .star-svg,.star-reflection{ width:120px; height:120px; transform: translateZ(24px); }
-  .star-reflection{ transform: translateX(-50%) scaleY(-1) translateY(46px) scale(0.98); opacity:0.72; filter: blur(3px); }
+  .star::before{ width:140px; height:110px; filter: blur(12px); }
+  .star::after{ width:80px; height:18px; filter: blur(6px); }
 }
