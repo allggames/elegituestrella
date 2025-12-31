@@ -252,6 +252,20 @@ if (existing) {
         void btn.offsetWidth; // reflow
         btn.classList.add('pop','flip');
 
+// reproducir sonido inmediatamente (aprobado por el gesto del usuario)
+const audio = document.getElementById('claim-sound');
+if (audio) {
+  try {
+    audio.currentTime = 0;
+    audio.volume = 0.9; // ajustar volumen 0.0 - 1.0
+    const p = audio.play();
+    if (p && p.catch) p.catch(()=>{}); // ignorar error si algo falla
+  } catch(e){
+    // no romper la UI si falla
+    console.warn('Audio play failed', e);
+  }
+}
+
         // Use the assigned prize (persisted per day)
         let prize;
         try { prize = JSON.parse(btn.dataset.assignedPrize); } catch(e) { prize = weightedRandom(prizes); }
